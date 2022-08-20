@@ -54,8 +54,6 @@ import java.util.List;
 import java.util.Random;
 
 public class BuscandoDispositivosBluetooth extends AppCompatActivity implements BeaconConsumer {
-
-
     // variables para la configuracion de los beacons
     private Beacon beacon;
     private BluetoothAdapter btAdapter;

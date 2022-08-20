@@ -35,7 +35,6 @@ import java.util.*
 import kotlin.math.abs
 
 class BuscandoDispositivosWifi : AppCompatActivity(){
-
     private var wifiP2pManager: WifiP2pManager? = null
     private var wifiP2pChannel: WifiP2pManager.Channel? = null
     var longitude = 0.0
