@@ -19,9 +19,15 @@
         <entry key="..\:/Sergio/Documents/Android/Botondepanicov1/app/src/main/res/layout/adapter_dispositivos_encontrados_wifi.xml" value="0.536" />
         <entry key="..\:/Sergio/Documents/Android/Botondepanicov1/app/src/main/res/layout/map_devices_adapter.xml" value="0.24444444444444444" />
         <entry key="..\:/Sergio/Documents/Android/Botondepanicov1/app/src/main/res/layout/popup.xml" value="0.2105978260869565" />
+        <entry key="..\:/Users/David/Desktop/Developers Developers/Android/Botondepanicov1/app/src/main/res/drawable/borde.xml" value="0.2115" />
+        <entry key="..\:/Users/David/Desktop/Developers Developers/Android/Botondepanicov1/app/src/main/res/drawable/bordes_redondos.xml" value="0.2115" />
         <entry key="..\:/Users/David/Desktop/Developers Developers/Android/Botondepanicov1/app/src/main/res/layout/activity_buscando_dispositivos_bluetooth.xml" value="0.20416666666666666" />
         <entry key="..\:/Users/David/Desktop/Developers Developers/Android/Botondepanicov1/app/src/main/res/layout/activity_buscando_dispositivos_wifi.xml" value="0.33" />
-        <entry key="..\:/Users/David/Desktop/Developers Developers/Android/Botondepanicov1/app/src/main/res/layout/activity_pantalla_principal.xml" value="0.3864628820960699" />
+        <entry key="..\:/Users/David/Desktop/Developers Developers/Android/Botondepanicov1/app/src/main/res/layout/activity_login.xml" value="0.2" />
+        <entry key="..\:/Users/David/Desktop/Developers Developers/Android/Botondepanicov1/app/src/main/res/layout/activity_pantalla_principal.xml" value="0.25" />
+        <entry key="..\:/Users/David/Desktop/Developers Developers/Android/Botondepanicov1/app/src/main/res/layout/activity_registro.xml" value="0.20416666666666666" />
+        <entry key="..\:/Users/David/Desktop/Developers Developers/Android/Botondepanicov1/app/src/main/res/layout/adapter_dispositivos_encontrados_wifi.xml" value="0.20416666666666666" />
+        <entry key="..\:/Users/David/Desktop/Developers Developers/Android/Botondepanicov1/app/src/main/res/layout/popup.xml" value="0.20416666666666666" />
       </map>
     </option>
   </component>

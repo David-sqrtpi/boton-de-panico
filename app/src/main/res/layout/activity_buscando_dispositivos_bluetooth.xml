@@ -14,7 +14,7 @@
         android:layout_marginStart="5dp"
         android:layout_marginTop="5dp"
         android:layout_marginBottom="5dp"
-        android:background="@drawable/bordes_redondos"
+        android:background="@drawable/bordes_redondos_sos"
         android:onClick="onClickCambiarWifiDirect"
         android:paddingStart="5dp"
         android:paddingLeft="5dp"

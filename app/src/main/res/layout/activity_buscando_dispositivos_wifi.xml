@@ -354,7 +354,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="5dp"
-        android:background="@drawable/bordes_redondos"
+        android:background="@drawable/bordes_redondos_sos"
         android:onClick="onClickCambiarBluetooth"
         android:paddingStart="5dp"
         android:paddingLeft="5dp"

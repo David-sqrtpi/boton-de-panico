@@ -61,6 +61,7 @@ class BuscandoDispositivosWifi : AppCompatActivity(){
     private var key: String = "MY_KEY"
     private var keyAlarma: String = "ALARMA"
 
+    //TODO Deprecated
     private var mProgressDialog: ProgressDialog? = null
     var wifiManager: WifiManager? = null
 
@@ -82,7 +83,7 @@ class BuscandoDispositivosWifi : AppCompatActivity(){
     //Nombre Dispositivo
     private lateinit var nombreDispositivo: String
 
-    //Variables para permaneer en la actividad
+    //Variables para permanecer en la actividad
     private lateinit var onOffCambioAutomatico : Button
     private var permanecer = false
 

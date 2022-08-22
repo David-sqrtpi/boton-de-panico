@@ -24,6 +24,7 @@ class PantallaPrincipal : AppCompatActivity() {
         //LLama funcion
         estadoAlarma()
     }
+
     //Asigna INACTIVO a la alarma para que inicie apagda
     fun estadoAlarma(){
         val prefs = PreferenceManager.getDefaultSharedPreferences(this)
