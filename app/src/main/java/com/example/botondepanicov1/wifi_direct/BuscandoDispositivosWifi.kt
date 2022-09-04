@@ -87,7 +87,6 @@ class BuscandoDispositivosWifi : AppCompatActivity(){
     private lateinit var onOffCambioAutomatico : Button
     private var permanecer = false
 
-    @RequiresApi(Build.VERSION_CODES.JELLY_BEAN)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_buscando_dispositivos_wifi)
@@ -364,6 +363,13 @@ class BuscandoDispositivosWifi : AppCompatActivity(){
         val loc2 = Location("")
         loc2.latitude = latitude
         loc2.longitude = longitude
+        println("**************************************************************************")
+        println("Location 1: latitude -> ${loc1.latitude}")
+        println("Location 1: longitude -> ${loc1.longitude}")
+        println("Location 2: latitude -> ${loc2.latitude}")
+        println("Location 2: longitude -> ${loc2.longitude}")
+        println("**************************************************************************")
+
         return loc1.distanceTo(loc2)
     }
 

@@ -32,6 +32,21 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.BotonDePanicoV1">
+
+        <meta-data
+            android:name="com.google.android.geo.API_KEY"
+            android:value="${MAPS_API_KEY}" />
+
+        <meta-data
+            android:name="com.google.android.gms.version"
+            android:value="@integer/google_play_services_version" />
+
+        <activity
+            android:name=".activities.MainContent"
+            android:exported="false" />
+        <activity
+            android:name=".NoImportaActivity"
+            android:exported="false" />
         <activity
             android:name=".bluetooth.BuscandoDispositivosBluetooth"
             android:exported="true" />
@@ -40,7 +55,7 @@
         <activity android:name=".RecibirAlertas" />
         <activity android:name=".SolicitandoAyuda" />
         <activity android:name=".PantallaPrincipal" />
-        <activity android:name=".Login">
+        <activity android:name=".Login" android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
@@ -48,9 +63,11 @@
             </intent-filter>
         </activity>
 
+        <service android:name=".AlarmService"
+            android:enabled="true"/>
+
         <meta-data
             android:name="preloaded_fonts"
             android:resource="@array/preloaded_fonts" />
     </application>
-
 </manifest>

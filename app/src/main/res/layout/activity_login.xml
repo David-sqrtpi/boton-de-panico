@@ -4,7 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#050a34"
+    android:background="#002f6c"
     tools:context=".Login">
 
     <androidx.constraintlayout.widget.ConstraintLayout
@@ -33,7 +33,9 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_marginStart="20dp"
             android:layout_marginTop="10dp"
+            android:layout_marginEnd="20dp"
             android:fontFamily="@font/lexend_zetta"
             android:maxLines="1"
             android:text="BOTON DE PANICO"
@@ -57,18 +59,13 @@
 
         <com.google.android.material.textfield.TextInputLayout
             android:id="@+id/text_input_layout_outlined_user"
-            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginStart="50dp"
-            android:layout_marginEnd="50dp"
+            android:layout_marginStart="30dp"
+            android:layout_marginEnd="30dp"
             android:hint="Nombre"
-            android:textColorHint="@color/white"
-            app:boxStrokeColor="@color/white"
-            app:hintTextColor="@color/white"
             android:textSize="20sp"
-            app:boxBackgroundColor="#2b698e"
-            app:boxBackgroundMode="outline"
+            app:boxBackgroundMode="filled"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
@@ -78,10 +75,10 @@
             <com.google.android.material.textfield.TextInputEditText
                 android:id="@+id/user"
                 android:layout_width="match_parent"
-                android:layout_height="match_parent"
+                android:layout_height="wrap_content"
                 android:inputType="textCapWords"
                 android:maxLines="1"
-                android:textColor="@color/white"
+                android:text="Hola"
                 android:textSize="20sp" />
 
         </com.google.android.material.textfield.TextInputLayout>
@@ -89,10 +86,10 @@
 
         <Button
             android:id="@+id/continuar"
-            android:layout_width="wrap_content"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="5dp"
-            android:backgroundTint="#2b698e"
+            android:layout_marginStart="60dp"
+            android:layout_marginEnd="60dp"
             android:text="Continuar"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"

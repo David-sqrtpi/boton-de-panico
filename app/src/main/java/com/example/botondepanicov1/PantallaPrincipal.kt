@@ -9,6 +9,8 @@ import android.content.SharedPreferences
 import android.content.SharedPreferences.Editor
 import android.preference.PreferenceManager
 import android.util.Log
+import com.example.botondepanicov1.activities.MainContent
+import kotlinx.android.synthetic.main.activity_pantalla_principal.*
 
 
 class PantallaPrincipal : AppCompatActivity() {
@@ -21,7 +23,11 @@ class PantallaPrincipal : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_pantalla_principal)
 
-        //LLama funcion
+        val sharedPreference =  getSharedPreferences("PREFERENCE_NAME",MODE_PRIVATE)
+        val name = sharedPreference.getString("name", "Usuario")
+
+        saludo.text = "Hola, $name"
+
         estadoAlarma()
     }
 
@@ -34,7 +40,7 @@ class PantallaPrincipal : AppCompatActivity() {
     }
     //Captura accion boton solicitar ayuda
     fun onClickSolicitarAyuda(v:View){
-        val intent = Intent(this, BuscandoDispositivosWifi::class.java)
+        val intent = Intent(this, MainContent::class.java)
         startActivity(intent)
     }
     //Captura accion boton cerrar sesion
