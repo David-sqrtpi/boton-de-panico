@@ -18,9 +18,6 @@ ArrayAdapter<Ingredient>(context, resource) {
     private lateinit var indice: TextView
     private lateinit var date: TextView
 
-
-
-    private val ingredientList: List<Ingredient> = ArrayList()
     private var chatMessageList: MutableList<Ingredient> = ArrayList()
 
     private lateinit var imageView: ImageView
@@ -30,23 +27,12 @@ ArrayAdapter<Ingredient>(context, resource) {
         super.add(`object`)
     }
 
-    fun MapDevicesAdapter(context: Context, textViewResourceId: Int) {
-        textViewResourceId
-        context
-    }
-
-
-
     override fun getCount(): Int {
         return chatMessageList.size
     }
 
     override fun clear() {
         chatMessageList.clear()
-    }
-
-    fun setChatMessageList(chatMessageList: MutableList<Ingredient>) {
-        this.chatMessageList = chatMessageList
     }
 
     override fun getItem(index: Int): Ingredient {
@@ -56,7 +42,7 @@ ArrayAdapter<Ingredient>(context, resource) {
 
     @SuppressLint("UseCompatLoadingForDrawables", "SetTextI18n")
     override fun getView(position: Int, convertView: View?, parent: ViewGroup): View {
-        var row = convertView
+        val row: View?
         val ingredient = getItem(position)
 
         val inflater =
@@ -64,23 +50,16 @@ ArrayAdapter<Ingredient>(context, resource) {
         row = inflater.inflate(R.layout.adapter_dispositivos_encontrados_wifi, parent, false)
         name = row.findViewById(R.id.name)
         distance = row.findViewById(R.id.distancia)
-        indice = row.findViewById(R.id.indice)
         date = row.findViewById(R.id.fecha)
         imageView = row.findViewById(R.id.imageLocation)
-        name.text = ingredient.name
-        val distanceString: String
-        val charDistance = java.lang.String.valueOf(ingredient.getDistance())
-        distanceString = if (ingredient.getDistance() > 200.0) {
-            "No se pudo obtener la distancia"
-        } else if (charDistance.length < 3) {
-            "Distancia: $charDistance metros"
-        } else {
-            "Distancia: " + java.lang.String.valueOf(ingredient.getDistance())
+        name.text = "Dispositivo: ${ingredient.deviceName}"
+        val charDistance = java.lang.String.valueOf(ingredient.distance)
+        val distanceString: String = "Distancia: " + java.lang.String.valueOf(ingredient.distance)
                 .substring(0, 3) + " metros"
-        }
+
         distance.text = distanceString
-        date.text = "Fecha de actualización:  " + ingredient.getDate()
-        indice.text = "" + ingredient.getIndice()
+        date.text = "Fecha de actualización:  " + ingredient.date
+
         if (row != null) {
             when (position) {
                 0 -> imageView.background = row.resources.getDrawable(R.drawable.locationblack)

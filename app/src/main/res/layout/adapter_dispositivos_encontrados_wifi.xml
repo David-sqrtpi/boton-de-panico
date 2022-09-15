@@ -42,14 +42,6 @@
             android:textSize="12sp" />
 
         <TextView
-            android:id="@+id/indice"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Distancia: "
-            android:textColor="@color/white"
-            android:textSize="12sp" />
-
-        <TextView
             android:id="@+id/fecha"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
