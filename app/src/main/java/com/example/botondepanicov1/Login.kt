@@ -5,6 +5,7 @@ import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.widget.Toast
 import com.example.botondepanicov1.activities.MainContent
+import com.example.botondepanicov1.util.Constants
 import kotlinx.android.synthetic.main.activity_login.*
 
 class Login : AppCompatActivity() {
@@ -30,9 +31,9 @@ class Login : AppCompatActivity() {
     }
 
     private fun saveName(name: String){
-        val sharedPreference =  getSharedPreferences("PREFERENCE_NAME", MODE_PRIVATE)
+        val sharedPreference =  getSharedPreferences(Constants.PREFERENCES_KEY, MODE_PRIVATE)
         val editor = sharedPreference.edit()
-        editor.putString("name", name)
+        editor.putString(Constants.PREFERENCES_USERNAME, name.trim())
         editor.apply()
     }
 }

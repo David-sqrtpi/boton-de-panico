@@ -13,7 +13,9 @@ import android.net.wifi.WifiManager
 import android.net.wifi.p2p.WifiP2pManager
 import android.net.wifi.p2p.nsd.WifiP2pDnsSdServiceInfo
 import android.net.wifi.p2p.nsd.WifiP2pDnsSdServiceRequest
-import android.os.*
+import android.os.Build
+import android.os.Bundle
+import android.os.Handler
 import android.provider.Settings
 import android.util.Log
 import android.view.View
@@ -25,13 +27,11 @@ import androidx.core.content.ContextCompat
 import com.example.botondepanicov1.R
 import com.example.botondepanicov1.util.Constants
 import java.util.*
-import kotlin.collections.HashMap
-import kotlin.math.abs
 
 class BuscandoDispositivosWifi : AppCompatActivity() {
     private lateinit var wifiManager: WifiManager
-    private var wifiP2pChannel: WifiP2pManager.Channel? = null
-    private var wifiP2pManager: WifiP2pManager? = null
+    private lateinit var wifiP2pChannel: WifiP2pManager.Channel
+    private lateinit var wifiP2pManager: WifiP2pManager
     private var serviceInfo: WifiP2pDnsSdServiceInfo? = null
 
     private lateinit var deviceName: String
@@ -39,7 +39,6 @@ class BuscandoDispositivosWifi : AppCompatActivity() {
     private var latitude = 0.0
     private var distance = 0.0
 
-    private var record: HashMap<String, String> = HashMap()
     private var progressDialog: ProgressDialog? = null
     private var ingredients: ArrayList<Ingredient> = ArrayList()
     private var adapter: MapDevicesAdapter? = null
@@ -51,10 +50,12 @@ class BuscandoDispositivosWifi : AppCompatActivity() {
 
         wifiManager = this.applicationContext.getSystemService(WIFI_SERVICE) as WifiManager
 
-        deviceName =
-            "Dispositivo: ${Build.MANUFACTURER.uppercase(Locale.ROOT)} ${Build.MODEL}"
+        deviceName = "${Build.MANUFACTURER.uppercase(Locale.ROOT)} ${Build.MODEL}"
 
         lv = findViewById<View>(R.id.FndListIdMap) as ListView
+
+        wifiP2pManager = getSystemService(WIFI_P2P_SERVICE) as WifiP2pManager
+        wifiP2pChannel = wifiP2pManager!!.initialize(applicationContext, mainLooper, null)
 
         enableWifi()
         start()
@@ -96,9 +97,6 @@ class BuscandoDispositivosWifi : AppCompatActivity() {
         adapter = map
         lv.adapter = adapter
 
-        wifiP2pManager = getSystemService(WIFI_P2P_SERVICE) as WifiP2pManager
-        wifiP2pChannel = wifiP2pManager!!.initialize(applicationContext, mainLooper, null)
-
         progressDialog = ProgressDialog(this)
         progressDialog!!.setMessage("Buscando dispositivos por favor espere")
         progressDialog!!.setOnCancelListener { onBackPressed() }
@@ -118,167 +116,44 @@ class BuscandoDispositivosWifi : AppCompatActivity() {
 
         val handler = Handler(mainLooper)
 
-        handler.postDelayed(Runnable {
-            record["longitude"] = longitude.toString()
-            record["latitude"] = latitude.toString()
-            record["index"] = deviceName
-            try {
-                record["date"] = Encoder.dateToString(Date())!!
-            } catch (e: Exception) {
-                println(e)
-            }
-
-            Log.d("MapDevices", "Record coordinates in the hashmap")
-
-            serviceInfo = WifiP2pDnsSdServiceInfo.newInstance(
-                "_test", "_presence.tcp",
-                record
-            )
-
-            //Incomprehensible
-            if (ActivityCompat.checkSelfPermission(
-                    this@BuscandoDispositivosWifi,
-                    Manifest.permission.ACCESS_FINE_LOCATION
-                ) != PackageManager.PERMISSION_GRANTED
-            ) {
-                // TODO: Consider calling
-                //    ActivityCompat#requestPermissions
-                // here to request the missing permissions, and then overriding
-                //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
-                //                                          int[] grantResults)
-                // to handle the case where the user grants the permission. See the documentation
-                // for ActivityCompat#requestPermissions for more details.
-                return@Runnable
-            }
-
-            wifiP2pManager!!.addLocalService(
-                wifiP2pChannel,
-                serviceInfo,
-                object : WifiP2pManager.ActionListener {
-                    override fun onSuccess() {
-                        println("// Success!")
-                    }
-
-                    override fun onFailure(code: Int) {
-                        println("// Command failed.  Check for P2P_UNSUPPORTED, ERROR, or BUSY")
-                    }
-                }
-            )
-
+        handler.postDelayed({
             progressDialog!!.dismiss()
 
-            wifiP2pManager!!.setDnsSdResponseListeners(
-                wifiP2pChannel,
-                { _, _, _ -> }
-            ) { _, map, wifiP2pDevice ->
-                val ingredient = Ingredient().apply {
-                    deviceName = wifiP2pDevice.deviceName
-                    deviceAddress = wifiP2pDevice.deviceAddress
-                    longitude = java.lang.Double.valueOf(map["latitude"]!!)
-                    latitude = java.lang.Double.valueOf(map["longitude"]!!)
-                    date = map["date"]!!
-                    distance = calculateDistance(longitude, latitude)
-                }
+            val serviceRequest = WifiP2pDnsSdServiceRequest.newInstance("_test", "_presence.tcp")
 
-                distance = ingredient.distance
-                println(ingredient.toString())
-
-                if (!isObjectInArray(wifiP2pDevice.deviceAddress)) {
-                    ingredients.add(ingredient)
-
-                    val arrayList: ArrayList<Ingredient> = ingredients
-
-                    adapter!!.clear()
-                    for (i in arrayList.indices) {
-                        adapter!!.add(arrayList[i])
-                    }
-
-                    lv.setSelection(adapter!!.count - 1)
-
-                    Log.d("Add device", java.lang.String.valueOf(adapter!!.count))
-                    Log.d("Add device", ingredient.deviceName + " device")
-
-                    when (ingredients.size) {
-                        1 -> {
-                            println(ingredients.size)
-                            println(map["latitude"])
-                            println(map["longitude"])
-                        }
-                        2 -> {
-                            println(ingredients.size)
-                            println(map["latitude"])
-                            println(map["longitude"])
-                        }
-                        3 -> {
-                            println(ingredients.size)
-                            println(map["latitude"])
-                            println(map["longitude"])
-                        }
-                        4 -> {
-                            println(ingredients.size)
-                            println(map["latitude"])
-                            println(map["longitude"])
-                        }
-                        5 -> {
-                            println(ingredients.size)
-                            println(map["latitude"])
-                            println(map["longitude"])
-                        }
-                        6 -> {
-                            println(ingredients.size)
-                            println(map["latitude"])
-                            println(map["longitude"])
-                        }
-                        7 -> {
-                            println(ingredients.size)
-                            println(map["latitude"])
-                            println(map["longitude"])
-                        }
-                        8 -> {
-                            println(ingredients.size)
-                            println(map["latitude"])
-                            println(map["longitude"])
-                        }
-                        9 -> {
-                            println(ingredients.size)
-                            println(map["latitude"])
-                            println(map["longitude"])
-                        }
-                        10 -> {
-                            println(ingredients.size)
-                            println(map["latitude"])
-                            println(map["longitude"])
-                        }
-                    }
-                }
-            }
-
-            val serviceRequest = WifiP2pDnsSdServiceRequest.newInstance()
-
-            wifiP2pManager!!.addServiceRequest(
+            wifiP2pManager.addServiceRequest(
                 wifiP2pChannel,
                 serviceRequest,
                 object : WifiP2pManager.ActionListener {
                     override fun onSuccess() {
-                        println("// Success! addServiceRequest")
+                        Log.d("addServiceRequest", "Success!")
                     }
 
                     override fun onFailure(code: Int) {
-                        println("// Command failed.  Check for P2P_UNSUPPORTED, ERROR, or BUSY addServiceRequest")
+                        Log.d(
+                            "addServiceRequest",
+                            "Command failed.  Check for P2P_UNSUPPORTED, ERROR, or BUSY"
+                        )
                     }
-                })
+                }
+            )
 
-            wifiP2pManager!!.discoverServices(
+            wifiP2pManager.discoverServices(
                 wifiP2pChannel,
                 object : WifiP2pManager.ActionListener {
                     override fun onSuccess() {
-                        println("// Success! discoverServices")
+                        Log.d("discoverServices", "Success!")
                     }
 
                     override fun onFailure(code: Int) {
-                        println("// Command failed.  Check for P2P_UNSUPPORTED, ERROR, or BUSY discoverServices")
+                        Log.d(
+                            "disoverServices",
+                            "Command failed.  Check for P2P_UNSUPPORTED, ERROR, or BUSY"
+                        )
                     }
-                })
+                }
+            )
+
             Log.d("MapDevices", "Start services")
         }, 10000)
 
@@ -342,5 +217,81 @@ class BuscandoDispositivosWifi : AppCompatActivity() {
         override fun onStatusChanged(s: String, i: Int, bundle: Bundle) {}
         override fun onProviderEnabled(s: String) {}
         override fun onProviderDisabled(s: String) {}
+    }
+
+    @SuppressLint("MissingPermission")
+    private fun startRegistration() {
+        val record: HashMap<String, String> = HashMap()
+
+        val sharedPreferences = getSharedPreferences(Constants.PREFERENCES_KEY, MODE_PRIVATE)
+        val username = sharedPreferences.getString(Constants.PREFERENCES_USERNAME, "Usuario")
+            .toString()
+
+        record["longitude"] = longitude.toString()
+        record["latitude"] = latitude.toString()
+        record["index"] = deviceName
+        record["date"] = Encoder.dateToString(Date())!!
+        record["username"] = username
+
+        val serviceInfo =
+            WifiP2pDnsSdServiceInfo.newInstance("_test", "_presence._tcp", record)
+
+        wifiP2pManager.addLocalService(
+            wifiP2pChannel,
+            serviceInfo,
+            object : WifiP2pManager.ActionListener {
+                override fun onSuccess() {
+                    Log.d("addLocalService", "Success!")
+                }
+
+                override fun onFailure(arg0: Int) {
+                    Log.d(
+                        "addLocalService",
+                        "Command failed.  Check for P2P_UNSUPPORTED, ERROR, or BUSY"
+                    )
+                }
+            })
+    }
+
+    private fun discoverService() {
+        val servListener =
+            WifiP2pManager.DnsSdServiceResponseListener { instanceName, registrationType, resourceType ->
+                Log.d(
+                    "TAG",
+                    "instanceName: $instanceName, registrationType: $registrationType, resourceType: $resourceType"
+                )
+            }
+
+        val txtListener = WifiP2pManager.DnsSdTxtRecordListener { _, record, device ->
+            val ingredient = Ingredient().apply {
+                deviceName = record["index"]!!
+                deviceAddress = device.deviceAddress
+                longitude = java.lang.Double.valueOf(record["latitude"]!!)
+                latitude = java.lang.Double.valueOf(record["longitude"]!!)
+                date = record["date"]!!
+                distance = calculateDistance(longitude, latitude)
+            }
+
+            distance = ingredient.distance
+
+            if (!isObjectInArray(device.deviceAddress)) {
+                ingredients.add(ingredient)
+
+                val arrayList: ArrayList<Ingredient> = ingredients
+
+                adapter!!.clear()
+                for (i in arrayList.indices) {
+                    adapter!!.add(arrayList[i])
+                }
+
+                lv.setSelection(adapter!!.count - 1)
+
+                Log.d("Add device", java.lang.String.valueOf(adapter!!.count))
+                Log.d("Add device", ingredient.deviceName + " device")
+            }
+            Log.d("ingredient", ingredient.toString())
+        }
+
+        wifiP2pManager.setDnsSdResponseListeners(wifiP2pChannel, servListener, txtListener)
     }
 }

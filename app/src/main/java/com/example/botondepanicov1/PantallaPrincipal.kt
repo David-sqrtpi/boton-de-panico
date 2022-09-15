@@ -40,7 +40,7 @@ class PantallaPrincipal : AppCompatActivity() {
     }
     //Captura accion boton solicitar ayuda
     fun onClickSolicitarAyuda(v:View){
-        val intent = Intent(this, BuscandoDispositivosWifi::class.java)
+        val intent = Intent(this, MainContent::class.java)
         startActivity(intent)
     }
     //Captura accion boton cerrar sesion

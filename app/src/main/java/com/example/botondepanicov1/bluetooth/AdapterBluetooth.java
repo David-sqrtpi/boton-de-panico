@@ -53,8 +53,8 @@ public View getView(int position, @Nullable View convertView, @NonNull ViewGroup
         }
 
 
-        TextView indice = view.findViewById(R.id.indice);
-        indice.setText("Fecha de actualización: ");
+        //TextView indice = view.findViewById(R.id.indice);
+        //indice.setText("Fecha de actualización: ");
 
         TextView fecha = view.findViewById(R.id.fecha);
         fecha.setText(dispostivo.getFecha());
