@@ -1,10 +1,8 @@
 package com.example.botondepanicov1.wifi_direct
 
-import android.Manifest
 import android.annotation.SuppressLint
 import android.app.ProgressDialog
 import android.content.Intent
-import android.content.pm.PackageManager
 import android.database.DataSetObserver
 import android.location.Location
 import android.location.LocationListener
@@ -15,24 +13,22 @@ import android.net.wifi.p2p.nsd.WifiP2pDnsSdServiceInfo
 import android.net.wifi.p2p.nsd.WifiP2pDnsSdServiceRequest
 import android.os.Build
 import android.os.Bundle
-import android.os.Handler
 import android.provider.Settings
 import android.util.Log
 import android.view.View
 import android.widget.ListView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.app.ActivityCompat
-import androidx.core.content.ContextCompat
 import com.example.botondepanicov1.R
 import com.example.botondepanicov1.util.Constants
+import com.google.android.gms.location.FusedLocationProviderClient
+import com.google.android.gms.location.LocationServices
 import java.util.*
 
 class BuscandoDispositivosWifi : AppCompatActivity() {
     private lateinit var wifiManager: WifiManager
     private lateinit var wifiP2pChannel: WifiP2pManager.Channel
     private lateinit var wifiP2pManager: WifiP2pManager
-    private var serviceInfo: WifiP2pDnsSdServiceInfo? = null
 
     private lateinit var deviceName: String
     private var longitude = 0.0
@@ -76,21 +72,6 @@ class BuscandoDispositivosWifi : AppCompatActivity() {
     //WIFI Direct configuration
     @SuppressLint("MissingPermission")
     private fun start() {
-        //TODO check location permission onStart
-        if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) !=
-            PackageManager.PERMISSION_GRANTED ||
-            ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) !=
-            PackageManager.PERMISSION_GRANTED
-        ) {
-            ActivityCompat.requestPermissions(
-                this, arrayOf(
-                    Manifest.permission.ACCESS_FINE_LOCATION,
-                    Manifest.permission.ACCESS_COARSE_LOCATION
-                ),
-                1
-            )
-        }
-
         turnGPSOn()
 
         val map = MapDevicesAdapter(this, R.layout.adapter_dispositivos_encontrados_wifi)
@@ -112,51 +93,7 @@ class BuscandoDispositivosWifi : AppCompatActivity() {
         })
 
         //Establece la frecuencia de actualización del GPS y las coordenadas actuales
-        setMap()
-
-        val handler = Handler(mainLooper)
-
-        handler.postDelayed({
-            progressDialog!!.dismiss()
-
-            val serviceRequest = WifiP2pDnsSdServiceRequest.newInstance("_test", "_presence.tcp")
-
-            wifiP2pManager.addServiceRequest(
-                wifiP2pChannel,
-                serviceRequest,
-                object : WifiP2pManager.ActionListener {
-                    override fun onSuccess() {
-                        Log.d("addServiceRequest", "Success!")
-                    }
-
-                    override fun onFailure(code: Int) {
-                        Log.d(
-                            "addServiceRequest",
-                            "Command failed.  Check for P2P_UNSUPPORTED, ERROR, or BUSY"
-                        )
-                    }
-                }
-            )
-
-            wifiP2pManager.discoverServices(
-                wifiP2pChannel,
-                object : WifiP2pManager.ActionListener {
-                    override fun onSuccess() {
-                        Log.d("discoverServices", "Success!")
-                    }
-
-                    override fun onFailure(code: Int) {
-                        Log.d(
-                            "disoverServices",
-                            "Command failed.  Check for P2P_UNSUPPORTED, ERROR, or BUSY"
-                        )
-                    }
-                }
-            )
-
-            Log.d("MapDevices", "Start services")
-        }, 10000)
-
+        locationUpdates()
     }
 
     private fun isObjectInArray(deviceAddress: String): Boolean {
@@ -192,7 +129,7 @@ class BuscandoDispositivosWifi : AppCompatActivity() {
     }
 
     @SuppressLint("MissingPermission")
-    private fun setMap() {
+    private fun locationUpdates() {
         val lm = getSystemService(LOCATION_SERVICE) as LocationManager
 
         try {
@@ -202,14 +139,13 @@ class BuscandoDispositivosWifi : AppCompatActivity() {
         } catch (e: Exception) {
             Log.v("Sergio", e.toString())
         }
-
     }
 
     private val locationListenerGPS: LocationListener = object : LocationListener {
         override fun onLocationChanged(location: Location) {
-            println("La ubicación ha cambiado chaval")
             longitude = location.longitude
             latitude = location.latitude
+            println("La ubicación ha cambiado chaval")
             println("longitude: $longitude")
             println("latitude: $latitude")
         }
@@ -219,7 +155,6 @@ class BuscandoDispositivosWifi : AppCompatActivity() {
         override fun onProviderDisabled(s: String) {}
     }
 
-    @SuppressLint("MissingPermission")
     private fun startRegistration() {
         val record: HashMap<String, String> = HashMap()
 
@@ -235,7 +170,6 @@ class BuscandoDispositivosWifi : AppCompatActivity() {
 
         val serviceInfo =
             WifiP2pDnsSdServiceInfo.newInstance("_test", "_presence._tcp", record)
-
         wifiP2pManager.addLocalService(
             wifiP2pChannel,
             serviceInfo,
@@ -293,5 +227,42 @@ class BuscandoDispositivosWifi : AppCompatActivity() {
         }
 
         wifiP2pManager.setDnsSdResponseListeners(wifiP2pChannel, servListener, txtListener)
+
+        val serviceRequest = WifiP2pDnsSdServiceRequest.newInstance("_test", "_presence.tcp")
+
+        wifiP2pManager.addServiceRequest(
+            wifiP2pChannel,
+            serviceRequest,
+            object : WifiP2pManager.ActionListener {
+                override fun onSuccess() {
+                    Log.d("addServiceRequest", "Success!")
+                }
+
+                override fun onFailure(code: Int) {
+                    Log.d(
+                        "addServiceRequest",
+                        "Command failed.  Check for P2P_UNSUPPORTED, ERROR, or BUSY"
+                    )
+                }
+            }
+        )
+
+        wifiP2pManager.discoverServices(
+            wifiP2pChannel,
+            object : WifiP2pManager.ActionListener {
+                override fun onSuccess() {
+                    Log.d("discoverServices", "Success!")
+                }
+
+                override fun onFailure(code: Int) {
+                    Log.d(
+                        "disoverServices",
+                        "Command failed.  Check for P2P_UNSUPPORTED, ERROR, or BUSY"
+                    )
+                }
+            }
+        )
+
+        Log.d("MapDevices", "Start services")
     }
 }

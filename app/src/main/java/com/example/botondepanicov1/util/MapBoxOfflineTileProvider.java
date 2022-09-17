@@ -5,6 +5,7 @@ import java.io.File;
 
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
+import android.util.Log;
 
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.LatLngBounds;
@@ -60,7 +61,21 @@ public class MapBoxOfflineTileProvider implements TileProvider, Closeable {
             if (c != null) {
                 c.moveToFirst();
                 if (!c.isAfterLast()) {
-                    tile = new Tile(256, 256, c.getBlob(0));
+                    try {
+                        tile = new Tile(256, 256, c.getBlob(0));
+                        Log.d("* * * * * * * * * * *", "TILE");
+
+                        Log.d("* * * * * * * * * * *", c.getBlob(0).length+"");
+
+                        for (byte b: c.getBlob(0)) {
+                            System.out.print(b);
+                        }
+                    } catch (Exception e) {
+                        Log.d("* * * * * * * * * * *", "NO_TILE");
+                        Log.d("* * * * * * * * * * *", e.toString());
+                    } finally {
+                        Log.d("* * * * * * * * * * *", "FINALLY");
+                    }
                 }
                 c.close();
             }

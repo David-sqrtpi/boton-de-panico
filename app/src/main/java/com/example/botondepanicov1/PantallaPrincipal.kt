@@ -1,65 +1,78 @@
 package com.example.botondepanicov1
 
+import android.Manifest
 import android.content.Intent
-import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.view.View
-import com.example.botondepanicov1.wifi_direct.BuscandoDispositivosWifi
-import android.content.SharedPreferences
-import android.content.SharedPreferences.Editor
-import android.preference.PreferenceManager
-import android.util.Log
+import android.widget.Toast
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.appcompat.app.AppCompatActivity
 import com.example.botondepanicov1.activities.MainContent
+import com.example.botondepanicov1.util.Constants
+import com.example.botondepanicov1.util.StorageManager
 import kotlinx.android.synthetic.main.activity_pantalla_principal.*
 
-
 class PantallaPrincipal : AppCompatActivity() {
-    //Variables usadas para las prefrencias
-    private var key: String = "MY_KEY"//Datos personales
-    private var keyLogin: String = "LOGIN"//Logueo auto
-    private var keyAlarma: String = "ALARMA"//Etsado alarma
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_pantalla_principal)
 
-        val sharedPreference =  getSharedPreferences("PREFERENCE_NAME",MODE_PRIVATE)
-        val name = sharedPreference.getString("name", "Usuario")
-
-        saludo.text = "Hola, $name"
-
-        estadoAlarma()
+        if (!ValidacionPermisos.isLocationPermissionGranted(this)) {
+            requestLocationPermission()
+        } else {
+            whenLocationPermissionGranted()
+        }
     }
 
-    //Asigna INACTIVO a la alarma para que inicie apagda
-    fun estadoAlarma(){
-        val prefs = PreferenceManager.getDefaultSharedPreferences(this)
-        val editor = prefs.edit()
-        editor.putString(keyAlarma, "Inactiva")
-        editor.apply()
-    }
-    //Captura accion boton solicitar ayuda
-    fun onClickSolicitarAyuda(v:View){
+    fun onClickSolicitarAyuda(v: View) {
         val intent = Intent(this, MainContent::class.java)
         startActivity(intent)
     }
-    //Captura accion boton cerrar sesion
-    fun onClickCerrarSesion(v:View){
-        finish()
-        val prefs = PreferenceManager.getDefaultSharedPreferences(this)
 
-        Log.v("Sergio","Pref a " + prefs.getString(key,"1").toString())
-        Log.v("Sergio","Pref a" + prefs.getString(keyLogin,"2").toString())
-        Log.v("Sergio","Pref a" + prefs.getString(keyAlarma,"3").toString())
+    private fun requestLocationPermission() {
+        val locationPermissionRequest = registerForActivityResult(
+            ActivityResultContracts.RequestMultiplePermissions()
+        ) { permissions ->
+            when {
+                (permissions[Manifest.permission.ACCESS_FINE_LOCATION] == true) -> {
+                    whenLocationPermissionGranted()
+                }
+                (permissions[Manifest.permission.ACCESS_COARSE_LOCATION] == true) -> {
+                    //Creo que solo sale en android 12
+                    Toast.makeText(this, "Coarse location", Toast.LENGTH_SHORT).show()
+                    whenLocationPermissionGranted()
+                }
+                else -> {
+                    Toast.makeText(
+                        this,
+                        "El permiso de ubicación es necesario para ver dispositivos cercanos",
+                        Toast.LENGTH_SHORT
+                    ).show()
+                    finish()
+                }
+            }
 
-        val editor = prefs.edit()
-        editor.clear().apply()
+        }
 
-        Log.v("Sergio","Pref d" + prefs.getString(key,"1").toString())
-        Log.v("Sergio","Pref d" + prefs.getString(keyLogin,"2").toString())
-        Log.v("Sergio","Pref d" + prefs.getString(keyAlarma,"3").toString())
+        locationPermissionRequest.launch(
+            arrayOf(
+                Manifest.permission.ACCESS_FINE_LOCATION,
+                Manifest.permission.ACCESS_COARSE_LOCATION
+            )
+        )
+    }
 
-        val intent = Intent(this,Login::class.java)
-        startActivity(intent)
+    private fun whenLocationPermissionGranted() {
+        val sharedPreference = getSharedPreferences(Constants.PREFERENCES_KEY, MODE_PRIVATE)
+        val name = sharedPreference.getString(Constants.PREFERENCES_USERNAME, null)
+
+        if(name == null){
+            val intent = Intent(this, Login::class.java)
+            startActivity(intent)
+            finish()
+        } else {
+            saludo.text = "Hola, $name"
+            StorageManager.storeRawToLocal(this)
+        }
     }
 }

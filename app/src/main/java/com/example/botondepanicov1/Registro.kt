@@ -13,12 +13,12 @@ import android.view.View
 import android.widget.*
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
-import com.google.firebase.auth.*
+//import com.google.firebase.auth.*
 
 import kotlinx.android.synthetic.main.activity_registro.*
 import java.util.*
-import com.google.firebase.database.DatabaseReference
-import com.google.firebase.database.FirebaseDatabase
+//import com.google.firebase.database.DatabaseReference
+//import com.google.firebase.database.FirebaseDatabase
 import kotlinx.android.synthetic.main.activity_registro.error_password
 import kotlinx.android.synthetic.main.activity_registro.password
 import java.text.SimpleDateFormat
@@ -26,9 +26,9 @@ import java.text.SimpleDateFormat
 
 class Registro : AppCompatActivity() {
     //Variables para la conexion de FIREBASE
-    private lateinit var dbReferenciaUser: DatabaseReference
-    private lateinit var database: FirebaseDatabase
-    private lateinit var auth: FirebaseAuth
+//    private lateinit var dbReferenciaUser: DatabaseReference
+//    private lateinit var database: FirebaseDatabase
+//    private lateinit var auth: FirebaseAuth
     //Variable para el correo
     private lateinit var email: String
 
@@ -42,10 +42,10 @@ class Registro : AppCompatActivity() {
         inicializarSpinnerRh()
         inicializarSpinnerSigno()
         //Inicializacion variables
-        database = FirebaseDatabase.getInstance()
-        auth = FirebaseAuth.getInstance()
+//        database = FirebaseDatabase.getInstance()
+//        auth = FirebaseAuth.getInstance()
         //Se le inidca el PATH con el cual busca el FIREBASE
-        dbReferenciaUser = database.reference.child("User")
+//        dbReferenciaUser = database.reference.child("User")
     }
     //Asinga la fecha actual al calendario
     @SuppressLint("SetTextI18n")
@@ -66,17 +66,17 @@ class Registro : AppCompatActivity() {
     fun onClickRegistrar(v: View) {
         val cm =
             applicationContext.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
-        val activeNetwork: NetworkInfo? = cm.activeNetworkInfo
-        val isConnected: Boolean = activeNetwork?.isConnectedOrConnecting == true
+//        val activeNetwork: NetworkInfo? = cm.activeNetworkInfo
+//        val isConnected: Boolean = activeNetwork?.isConnectedOrConnecting == true
         //Valida la conexion a internet
-        if (isConnected) {
-            //CONTROLAR QUE SI HAY ERROR, NO PASE A AUTENTIFICAR
-            if (falloRegistro()) {
-                autentificar()
-            }
-        } else {
-            mostrarErrorConexion()
-        }
+//        if (isConnected) {
+//            //CONTROLAR QUE SI HAY ERROR, NO PASE A AUTENTIFICAR
+//            if (falloRegistro()) {
+//                autentificar()
+//            }
+//        } else {
+//            mostrarErrorConexion()
+//        }
     }
     //Se sube ka información del usuario a FIREBASE
     @SuppressLint("CommitPrefEdits")
@@ -93,35 +93,35 @@ class Registro : AppCompatActivity() {
 
         val user = email.replace("@gmail.com", "")
         Log.v("Sergio", user)
-        auth.createUserWithEmailAndPassword(email, persona.getContrasenia())
-            .addOnCompleteListener(this) { task ->
-                if (task.isComplete) {
-                    val userBD = dbReferenciaUser.child(user)
-                    userBD.child("tipo_documento").setValue(persona.getTipoDocumento())
-                    userBD.child("documento").setValue(persona.getNumeroDocumento())
-                    userBD.child("nombre").setValue(persona.getNombres())
-                    userBD.child("apellido").setValue(persona.getApellidos())
-                    userBD.child("genero").setValue(persona.getGenero())
-                    userBD.child("rh").setValue(persona.getRh())
-                    userBD.child("fecha_nacimiento").setValue(persona.getFechaNacimiento())
-                    userBD.child("contraseña").setValue(persona.getContrasenia())
-                }
-            }
+//        auth.createUserWithEmailAndPassword(email, persona.getContrasenia())
+//            .addOnCompleteListener(this) { task ->
+//                if (task.isComplete) {
+//                    val userBD = dbReferenciaUser.child(user)
+//                    userBD.child("tipo_documento").setValue(persona.getTipoDocumento())
+//                    userBD.child("documento").setValue(persona.getNumeroDocumento())
+//                    userBD.child("nombre").setValue(persona.getNombres())
+//                    userBD.child("apellido").setValue(persona.getApellidos())
+//                    userBD.child("genero").setValue(persona.getGenero())
+//                    userBD.child("rh").setValue(persona.getRh())
+//                    userBD.child("fecha_nacimiento").setValue(persona.getFechaNacimiento())
+//                    userBD.child("contraseña").setValue(persona.getContrasenia())
+//                }
+//            }
     }
 
     //Valida que el ususario no este registrado, si no lo esta, lo crea. Si esta registrado arroja la alerta
     private fun autentificar() {
-        FirebaseAuth.getInstance()
-            .createUserWithEmailAndPassword(email, password.text.toString())
-            .addOnCompleteListener {
-                if (it.isSuccessful) {
-                    crearNuevaCuenta()
-                    mostrarExitoRegistro()
-
-                } else {
-                    mostrarErrorRegistro()
-                }
-            }
+//        FirebaseAuth.getInstance()
+//            .createUserWithEmailAndPassword(email, password.text.toString())
+//            .addOnCompleteListener {
+//                if (it.isSuccessful) {
+//                    crearNuevaCuenta()
+//                    mostrarExitoRegistro()
+//
+//                } else {
+//                    mostrarErrorRegistro()
+//                }
+//            }
     }
     //Dialogo de registro exitoso
     private fun mostrarExitoRegistro() {

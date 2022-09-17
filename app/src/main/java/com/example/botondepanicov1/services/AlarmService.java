@@ -1,4 +1,4 @@
-package com.example.botondepanicov1;
+package com.example.botondepanicov1.services;
 
 import android.app.Service;
 import android.content.Intent;
@@ -7,6 +7,8 @@ import android.media.MediaPlayer;
 import android.os.IBinder;
 
 import androidx.annotation.Nullable;
+
+import com.example.botondepanicov1.R;
 
 public class AlarmService extends Service {
     private MediaPlayer player;

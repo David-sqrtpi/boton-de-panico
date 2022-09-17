@@ -37,7 +37,6 @@
             android:layout_marginTop="10dp"
             android:layout_marginEnd="20dp"
             android:fontFamily="@font/lexend_zetta"
-            android:maxLines="1"
             android:text="BOTON DE PANICO"
             android:textColor="@color/white"
             android:textSize="25sp"
@@ -77,8 +76,6 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:inputType="textCapWords"
-                android:maxLines="1"
-                android:text="Hola"
                 android:textSize="20sp" />
 
         </com.google.android.material.textfield.TextInputLayout>
