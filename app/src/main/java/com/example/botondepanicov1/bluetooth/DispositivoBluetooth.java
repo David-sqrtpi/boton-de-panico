@@ -10,11 +10,13 @@ public class DispositivoBluetooth {
     Identifier nombre;
     Double distancia;
     String fecha;
+    String amigo;
 
-    public DispositivoBluetooth(Identifier nombre, Double distancia, String fecha) {
+    public DispositivoBluetooth(Identifier nombre, Double distancia, String fecha, String amigo) {
         this.nombre = nombre;
         this.distancia = distancia;
         this.fecha = fecha;
+        this.amigo = amigo;
     }
 
     public Identifier getNombre() {
@@ -40,5 +42,13 @@ public class DispositivoBluetooth {
 
     public void setFecha(String fecha) {
         this.fecha = fecha;
+    }
+
+    public String getAmigo(){
+        return amigo;
+    }
+
+    public void setAmigo(String amigo) {
+        this.amigo = amigo;
     }
 }

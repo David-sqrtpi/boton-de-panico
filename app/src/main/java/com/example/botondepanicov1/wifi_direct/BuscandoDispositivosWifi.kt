@@ -134,25 +134,19 @@ class BuscandoDispositivosWifi : AppCompatActivity() {
 
         try {
             lm.requestLocationUpdates(
-                LocationManager.GPS_PROVIDER, 100, 5f, locationListenerGPS
+                LocationManager.GPS_PROVIDER, 100, 0f, locationListenerGPS
             )
         } catch (e: Exception) {
             Log.v("Sergio", e.toString())
         }
     }
 
-    private val locationListenerGPS: LocationListener = object : LocationListener {
-        override fun onLocationChanged(location: Location) {
-            longitude = location.longitude
-            latitude = location.latitude
-            println("La ubicación ha cambiado chaval")
-            println("longitude: $longitude")
-            println("latitude: $latitude")
-        }
-
-        override fun onStatusChanged(s: String, i: Int, bundle: Bundle) {}
-        override fun onProviderEnabled(s: String) {}
-        override fun onProviderDisabled(s: String) {}
+    private val locationListenerGPS: LocationListener = LocationListener { location ->
+        longitude = location.longitude
+        latitude = location.latitude
+        println("La ubicación ha cambiado chaval")
+        println("longitude: $longitude")
+        println("latitude: $latitude")
     }
 
     private fun startRegistration() {

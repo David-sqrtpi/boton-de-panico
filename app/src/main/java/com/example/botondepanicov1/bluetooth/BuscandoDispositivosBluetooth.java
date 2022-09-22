@@ -1,37 +1,29 @@
 package com.example.botondepanicov1.bluetooth;
 
-import androidx.annotation.NonNull;
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.app.ActivityCompat;
-
 import android.Manifest;
 import android.annotation.SuppressLint;
-import android.annotation.TargetApi;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothManager;
 import android.bluetooth.le.AdvertiseCallback;
 import android.bluetooth.le.AdvertiseSettings;
 import android.content.Context;
-import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
-import android.media.MediaPlayer;
-import android.net.wifi.WifiInfo;
-import android.net.wifi.WifiManager;
 import android.os.Build;
 import android.os.Bundle;
-import android.os.CountDownTimer;
 import android.os.RemoteException;
 import android.preference.PreferenceManager;
 import android.util.Log;
-import android.view.View;
-import android.widget.Button;
 import android.widget.ListView;
 import android.widget.Toast;
 
-import com.example.botondepanicov1.AlarmaSonora;
+import androidx.annotation.NonNull;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
+
 import com.example.botondepanicov1.R;
-import com.example.botondepanicov1.wifi_direct.BuscandoDispositivosWifi;
+import com.example.botondepanicov1.models.BluetoothFrame;
+import com.example.botondepanicov1.wifi_direct.Ingredient;
 
 import org.altbeacon.beacon.Beacon;
 import org.altbeacon.beacon.BeaconConsumer;
@@ -51,7 +43,6 @@ import java.util.Calendar;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
-import java.util.Random;
 
 public class BuscandoDispositivosBluetooth extends AppCompatActivity implements BeaconConsumer {
     // variables para la configuracion de los beacons
@@ -60,23 +51,11 @@ public class BuscandoDispositivosBluetooth extends AppCompatActivity implements 
     private BeaconManager beaconManager;
     private BeaconTransmitter beaconTransmitter;
     private static final String TAG = "Sergio";
-    private Button buscar;
 
     private ListView listaBluetooth;
     private List<DispositivoBluetooth> mLista = new ArrayList<>();
+    private List<Ingredient> mlistav2 = new ArrayList<>();
     private AdapterBluetooth mAdapter;
-
-    //Variables para permaneer en la actividad
-    private Button onOffCambioAutomaticoBlue;
-    private Boolean permanecerBlue = false;
-
-    //Terminar activiadd
-    private int terminarActividadBlue = 0;
-
-    //Alarma
-    private Button  playPausar;
-    private MediaPlayer mp;
-    private final AlarmaSonora alarma = new AlarmaSonora();
 
     //Direccion MAC
     String mac;
@@ -87,8 +66,8 @@ public class BuscandoDispositivosBluetooth extends AppCompatActivity implements 
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_buscando_dispositivos_bluetooth);
         //LEER PREFERENCIAS DE LA MAC
-        SharedPreferences pref = PreferenceManager.getDefaultSharedPreferences((Context)this);
-        String datos = String.valueOf(pref.getString(this.KEY_MAC, "No hay datos"));
+        SharedPreferences pref = PreferenceManager.getDefaultSharedPreferences(this);
+        String datos = pref.getString(this.KEY_MAC, "No hay datos");
         Log.v("Sergio","MACKEY"+datos);
         // valida que se pueda optener la MAC, si no es posible genera el numero aleatorio
         if (datos.equals("No hay datos")){
@@ -97,22 +76,14 @@ public class BuscandoDispositivosBluetooth extends AppCompatActivity implements 
         }{
             mac = datos;
         }
+
         //llama a funcion de validar permisos de localozacion
         checkPermission();
         listaBluetooth = findViewById(R.id.listBluetooth);
         btAdapter = BluetoothAdapter.getDefaultAdapter();
         beaconManager = BeaconManager.getInstanceForApplication(this);
 
-        playPausar = findViewById(R.id.alarmaBlue);
-        mp = MediaPlayer.create(this,R.raw.alarma_sonora);
-
         encenderBluetooth();
-        alarma.estadoPreferencia(playPausar,mp,this);
-        onOffCambioAutomaticoBlue = findViewById(R.id.onOffAutoBlue);
-        onOffCambioAutomaticoBlue.setText("No");
-        // llama la funcion del temporizador
-        iniciarCuenta();
-        Log.v("Sergio", String.valueOf(calclarTiempo()));
         //llama la funcion para la configuracion del beacon
         setupBeacon();
         //llama la funcion para envio de los beacons
@@ -174,11 +145,12 @@ public class BuscandoDispositivosBluetooth extends AppCompatActivity implements 
 
     //si no es posible obtener la MAC guarda la aleatoria en preferencias
     public void guardarMacAleatoria(String mac){
-        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences((Context)this);
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
         SharedPreferences.Editor editor = prefs.edit();
         editor.putString(this.KEY_MAC, mac);
         editor.apply();
     }
+
     // concatena los numeros aleatorios
     public static String alternativaMac(){
         return numeroAleatorio()+numeroAleatorio();
@@ -196,24 +168,8 @@ public class BuscandoDispositivosBluetooth extends AppCompatActivity implements 
     //termina la actividad cuando se hace uso de boton atras
     @Override
     public void onBackPressed() {
-        terminarActividadBlue = 1;
-        alarma.apagarFinActividad(playPausar,mp,this);
         beaconManager.unbind(BuscandoDispositivosBluetooth.this);
-        Log.d("Sergio", "terminarActividad = "+terminarActividadBlue);
         this.finish();
-    }
-
-    //verifica el estado del boton en NO para hacer cambio automatico
-    public  void onClickOnOffCambioAutomatico(View view){
-        permanecerBlue = !permanecerBlue;
-        if (permanecerBlue){
-            onOffCambioAutomaticoBlue.setText("Si");
-            terminarActividadBlue = 1;
-        }else{
-            onOffCambioAutomaticoBlue.setText("No");
-
-            cambioActividad(true);
-        }
     }
 
     //encender o apagar bluetooth
@@ -232,6 +188,7 @@ public class BuscandoDispositivosBluetooth extends AppCompatActivity implements 
     private boolean isBluetoothLEAvailable() {
         return btAdapter != null && this.getPackageManager().hasSystemFeature(PackageManager.FEATURE_BLUETOOTH_LE);
     }
+
     //valida que el bluetooth este encendido
     private boolean getBlueToothOn() {
         return btAdapter != null && btAdapter.isEnabled();
@@ -254,7 +211,7 @@ public class BuscandoDispositivosBluetooth extends AppCompatActivity implements 
 
     // envio de beacons
     private void transmitIBeacon() {
-        boolean isSupported = false;
+        boolean isSupported;
         isSupported = btAdapter.isMultipleAdvertisementSupported();
         if (isSupported) {
 
@@ -270,7 +227,6 @@ public class BuscandoDispositivosBluetooth extends AppCompatActivity implements 
                         Log.e(TAG, "Advertisement start failed with code: " + errorCode);
                     }
 
-                    @TargetApi(Build.VERSION_CODES.LOLLIPOP)
                     @Override
                     public void onStartSuccess(AdvertiseSettings settingsInEffect) {
                         Log.i(TAG, "Advertisement start succeeded." + settingsInEffect.toString());
@@ -283,6 +239,7 @@ public class BuscandoDispositivosBluetooth extends AppCompatActivity implements 
             toast.show();
         }
     }
+
     //configuracion del beacon concatenando la MAC
     private void setupBeacon() {
         String uuid = "954e6dac-5612-4642-b2d1-"+mac;
@@ -338,21 +295,16 @@ public class BuscandoDispositivosBluetooth extends AppCompatActivity implements 
             }
         });
 
-        //se optienen los datos recibidos de los beacons
-        beaconManager.setRangeNotifier(new RangeNotifier() {
-            @Override
-            public void didRangeBeaconsInRegion(Collection<Beacon> beacons, Region region) {
-                BluetoothAdapter btAdapter = BluetoothAdapter.getDefaultAdapter();
-                for (Beacon oneBeacon : beacons) {
+        //se obtienen los datos recibidos de los beacons
+        beaconManager.setRangeNotifier((beacons, region1) -> {
+            for (Beacon oneBeacon : beacons) {
 
-                    Log.d(TAG, "distance: " + oneBeacon.getDistance() + " adrres:" + oneBeacon.getBluetoothAddress()
-                            + " id:" + oneBeacon.getId1() + "/" + oneBeacon.getId2() + "/" + oneBeacon.getId3());
+                Log.d(TAG, "distance: " + oneBeacon.getDistance() + " adrres:" + oneBeacon.getBluetoothAddress()
+                        + " id:" + oneBeacon.getId1() + "/" + oneBeacon.getId2() + "/" + oneBeacon.getId3());
 
-                    mLista = eliminarDuplicados(mLista,oneBeacon);
-                    mAdapter = new AdapterBluetooth(BuscandoDispositivosBluetooth.this, R.layout.adapter_dispositivos_encontrados_wifi,mLista);
-                    listaBluetooth.setAdapter(mAdapter);
-                }
-
+                mLista = eliminarDuplicados(mLista,oneBeacon);
+                mAdapter = new AdapterBluetooth(BuscandoDispositivosBluetooth.this, R.layout.adapter_dispositivos_encontrados_wifi,mLista);
+                listaBluetooth.setAdapter(mAdapter);
             }
         });
 
@@ -362,51 +314,6 @@ public class BuscandoDispositivosBluetooth extends AppCompatActivity implements 
         } catch (RemoteException e) {
             e.printStackTrace();
         }
-    }
-    //inicializa el temporizador
-    public final void iniciarCuenta() {
-        final long tiempo = this.calclarTiempo();
-        Log.d("Sergio", tiempo + " inicio wifi");
-        (new CountDownTimer(tiempo, 10000L) {
-            public void onTick(long millisUntilFinished) {
-                long tiempoF = millisUntilFinished / (long)1000;
-                int minutosF = (int)(tiempoF / (long)60);
-                long segundosF = tiempoF % (long)60;
-                Log.d("Sergio", "" + minutosF + ':' + segundosF + " -- terminar " + terminarActividadBlue + " -- Permanecer " + permanecerBlue);
-            }
-
-            public void onFinish() {
-                if (terminarActividadBlue == 0) {
-                    cambioActividad(permanecerBlue);
-                }
-
-            }
-        }).start();
-    }
-    // acción para cambio de tecnologia
-    private void cambioActividad(Boolean permanecer){
-        alarma.apagarTemporizador(playPausar,mp,BuscandoDispositivosBluetooth.this);
-        Intent intent;
-        if(permanecer){
-            intent = new Intent(this, BuscandoDispositivosBluetooth.class);
-        }else{
-            intent = new Intent(this, BuscandoDispositivosWifi.class);
-        }
-        beaconManager.unbind(BuscandoDispositivosBluetooth.this);
-        //btAdapter.disable();
-        finish();
-        startActivity(intent);
-    }
-
-    // calcula el tiempo del temporizador por medio de una variable con distribucion normal
-    private Long calclarTiempo(){
-        Random gauss = new Random();
-        int numeroAleaorio = (int) gauss.nextGaussian();
-        int desviacionStandar = 1;
-        int media = 5;
-        int numero = desviacionStandar * numeroAleaorio + media;
-        numero *= 10000;
-        return (long) numero;
     }
 
     // elimina el duplicados de dispositivos encontrados
@@ -419,7 +326,13 @@ public class BuscandoDispositivosBluetooth extends AppCompatActivity implements 
                 mLista.remove(i);
             }
         }
-        mLista.add(new DispositivoBluetooth(oneBeacon.getId1(),oneBeacon.getDistance(),strDate));
+
+        BluetoothFrame frame = new BluetoothFrame();
+        frame.setIdentifier(oneBeacon.getId1());
+        frame.setDistance(oneBeacon.getDistance());
+        frame.setDate(strDate);
+
+        mLista.add(new DispositivoBluetooth(oneBeacon.getId1(),oneBeacon.getDistance(),strDate, "Hola a todos mis amigos!" + Math.random()));
         return lista;
     }
     // valida los permisos de localizacion
@@ -441,22 +354,5 @@ public class BuscandoDispositivosBluetooth extends AppCompatActivity implements 
         } else {
             checkPermission();
         }
-    }
-
-     // accion para el boton de encender alarma
-    public void onClickAlarmaBlue(View view){
-        alarma.reproducirParar(playPausar,mp,this);
-    }
-
-    //recargar la actividad
-    public void onClickRefrescarBlue(View view){
-        terminarActividadBlue = 1;
-        cambioActividad(true);
-    }
-
-    // accion del boton para cambiar de tecnologia
-    public void onClickCambiarWifiDirect(View view){
-        terminarActividadBlue = 1;
-        cambioActividad(false);
     }
 }

@@ -65,14 +65,17 @@ class PantallaPrincipal : AppCompatActivity() {
     private fun whenLocationPermissionGranted() {
         val sharedPreference = getSharedPreferences(Constants.PREFERENCES_KEY, MODE_PRIVATE)
         val name = sharedPreference.getString(Constants.PREFERENCES_USERNAME, null)
+        val intent = Intent(this, Login::class.java)
 
         if(name == null){
-            val intent = Intent(this, Login::class.java)
             startActivity(intent)
             finish()
         } else {
-            saludo.text = "Hola, $name"
             StorageManager.storeRawToLocal(this)
+            saludo.text = "Hola, $name"
+            edit_name.setOnClickListener{
+                startActivity(intent)
+            }
         }
     }
 }

@@ -6,15 +6,36 @@ import android.os.Bundle
 import android.view.View
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import com.example.botondepanicov1.bluetooth.BuscandoDispositivosBluetooth
 import com.example.botondepanicov1.util.Constants
+import com.example.botondepanicov1.wifi_direct.BuscandoDispositivosWifi
 import kotlinx.android.synthetic.main.activity_login.*
 
+//TODO mostrar el nombre guardado en el sp en el et
 class Login : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_login)
 
         continuar.setOnClickListener(onContinuarClickListener)
+
+        button2.setOnClickListener {
+            startActivity(
+                Intent(
+                    this,
+                    BuscandoDispositivosWifi::class.java
+                )
+            )
+        }
+
+        button3.setOnClickListener{
+            startActivity(
+                Intent(
+                    this,
+                    BuscandoDispositivosBluetooth::class.java
+                )
+            )
+        }
     }
 
     private val onContinuarClickListener = View.OnClickListener {

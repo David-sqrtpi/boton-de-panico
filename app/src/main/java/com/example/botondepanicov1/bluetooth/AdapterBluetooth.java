@@ -42,7 +42,7 @@ public View getView(int position, @Nullable View convertView, @NonNull ViewGroup
         DispositivoBluetooth dispostivo = miLista.get(position);
 
         TextView nombre = view.findViewById(R.id.name);
-        nombre.setText("Dispositivo: " + dispostivo.getNombre());
+        nombre.setText("Dispositivo: " + dispostivo.getAmigo());
 
         TextView distancia = view.findViewById(R.id.distancia);
         if (dispostivo.getDistancia() < 0){
