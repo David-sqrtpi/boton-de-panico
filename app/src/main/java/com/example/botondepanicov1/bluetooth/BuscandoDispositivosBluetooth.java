@@ -53,8 +53,7 @@ public class BuscandoDispositivosBluetooth extends AppCompatActivity implements 
     private static final String TAG = "Sergio";
 
     private ListView listaBluetooth;
-    private List<DispositivoBluetooth> mLista = new ArrayList<>();
-    private List<Ingredient> mlistav2 = new ArrayList<>();
+    private List<BluetoothFrame> mLista = new ArrayList<>();
     private AdapterBluetooth mAdapter;
 
     //Direccion MAC
@@ -317,12 +316,12 @@ public class BuscandoDispositivosBluetooth extends AppCompatActivity implements 
     }
 
     // elimina el duplicados de dispositivos encontrados
-    public List<DispositivoBluetooth> eliminarDuplicados(List<DispositivoBluetooth> lista, Beacon oneBeacon){
+    public List<BluetoothFrame> eliminarDuplicados(List<BluetoothFrame> lista, Beacon oneBeacon){
         Calendar c = Calendar.getInstance();
         @SuppressLint("SimpleDateFormat") SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
         String strDate = sdf.format(c.getTime());
         for(int i = 0; i<mLista.size();i++){
-            if(mLista.get(i).nombre.equals(oneBeacon.getId1())){
+            if(mLista.get(i).getIdentifier().equals(oneBeacon.getId1())){
                 mLista.remove(i);
             }
         }
@@ -332,7 +331,7 @@ public class BuscandoDispositivosBluetooth extends AppCompatActivity implements 
         frame.setDistance(oneBeacon.getDistance());
         frame.setDate(strDate);
 
-        mLista.add(new DispositivoBluetooth(oneBeacon.getId1(),oneBeacon.getDistance(),strDate, "Hola a todos mis amigos!" + Math.random()));
+        mLista.add(frame);
         return lista;
     }
     // valida los permisos de localizacion

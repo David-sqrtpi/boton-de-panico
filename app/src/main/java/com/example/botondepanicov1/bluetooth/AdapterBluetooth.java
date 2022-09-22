@@ -12,52 +12,51 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import com.example.botondepanicov1.R;
+import com.example.botondepanicov1.models.BluetoothFrame;
 
 import java.util.List;
 
-public class AdapterBluetooth extends ArrayAdapter<DispositivoBluetooth> {
+public class AdapterBluetooth extends ArrayAdapter<BluetoothFrame> {
 
-        //variables para las lista de los dispositivos bluetooth
-private final List<DispositivoBluetooth> miLista;
-private final Context mContext;
-private final int resourceLayout;
+    //variables para las lista de los dispositivos bluetooth
+    private final List<BluetoothFrame> miLista;
+    private final Context mContext;
+    private final int resourceLayout;
 
-public AdapterBluetooth(@NonNull Context context, int resource, List<DispositivoBluetooth> objects) {
+    public AdapterBluetooth(@NonNull Context context, int resource, List<BluetoothFrame> objects) {
         super(context, resource, objects);
         this.miLista = objects;
         this.mContext = context;
         this.resourceLayout = resource;
-        }
+    }
 
-@SuppressLint("SetTextI18n")
-@NonNull
-@Override
-//muestra los dispositivos bluetooth con sus losn datos recibidos
-public View getView(int position, @Nullable View convertView, @NonNull ViewGroup parent) {
+    @SuppressLint("SetTextI18n")
+    @NonNull
+    @Override
+    //muestra los dispositivos bluetooth con sus losn datos recibidos
+    public View getView(int position, @Nullable View convertView, @NonNull ViewGroup parent) {
         View view = convertView;
-        if( view == null){
-        view = LayoutInflater.from(mContext).inflate(resourceLayout, null);
+        if (view == null) {
+            view = LayoutInflater.from(mContext).inflate(resourceLayout, null);
         }
 
-        DispositivoBluetooth dispostivo = miLista.get(position);
+        BluetoothFrame dispostivo = miLista.get(position);
 
         TextView nombre = view.findViewById(R.id.name);
-        nombre.setText("Dispositivo: " + dispostivo.getAmigo());
+        nombre.setText("Dispositivo: " + dispostivo.getDeviceName());
 
         TextView distancia = view.findViewById(R.id.distancia);
-        if (dispostivo.getDistancia() < 0){
-                distancia.setText("Distancia: " + 0 + "metros");
-        }
-        else{
-                distancia.setText("Distancia: " + dispostivo.getDistancia().toString() + "metros");
+        if (dispostivo.getDistance() < 0) {
+            distancia.setText("Distancia: " + 0 + "metros");
+        } else {
+            distancia.setText("Distancia: " + dispostivo.getDistance() + "metros");
         }
 
 
         //TextView indice = view.findViewById(R.id.indice);
         //indice.setText("Fecha de actualización: ");
-
         TextView fecha = view.findViewById(R.id.fecha);
-        fecha.setText(dispostivo.getFecha());
+        fecha.setText(dispostivo.getDate());
         return view;
-        }
+    }
 }
