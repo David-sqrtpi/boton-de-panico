@@ -30,6 +30,7 @@ import com.google.android.gms.maps.model.Marker
 import com.google.android.gms.maps.model.MarkerOptions
 import com.google.android.gms.tasks.Task
 import java.util.*
+import kotlin.collections.HashMap
 
 class MainContent : AppCompatActivity(), OnMapReadyCallback {
     private var toggleAlarm = false //TODO averiguar si se puede simplificar
@@ -106,7 +107,6 @@ class MainContent : AppCompatActivity(), OnMapReadyCallback {
             deviceName = "${Build.MANUFACTURER.uppercase(Locale.ROOT)} ${Build.MODEL}"
             latitude = location.latitude
             longitude = location.longitude
-            date = Encoder.dateToString(Date())!!
         }
 
         myself!!.marker = createMarker(myself!!)
@@ -139,7 +139,7 @@ class MainContent : AppCompatActivity(), OnMapReadyCallback {
             lm.requestLocationUpdates(
                 LocationManager.GPS_PROVIDER, 5000, 0f
             ) { location ->
-                println("TAG_WIFI location changed")
+                Log.d(Constants.TAG_WIFI, "Latitude: ${location.latitude}, longitude: ${location.longitude}")
                 if (myself == null) {
                     setupMyLocation(location)
                 } else {
@@ -169,6 +169,7 @@ class MainContent : AppCompatActivity(), OnMapReadyCallback {
             MarkerOptions()
                 .position(LatLng(ingredient.latitude, ingredient.longitude))
                 .title(ingredient.username)
+                .visible(true)
                 .visible(true)
         )
     }
@@ -289,7 +290,6 @@ class MainContent : AppCompatActivity(), OnMapReadyCallback {
     //TODO ignorar si no se ha configurado myself (pensar en eso, myself es nullable)
     private fun onReceivedLocation() {
         val txtListener = WifiP2pManager.DnsSdTxtRecordListener { _, record, device ->
-            Log.d(Constants.TAG_WIFI, "setDnsSdResponseListeners")
             Log.d(
                 Constants.TAG_WIFI,
                 "Arriving message (second implementation) record: $record"
@@ -301,7 +301,9 @@ class MainContent : AppCompatActivity(), OnMapReadyCallback {
                 ingredients.find { x -> x.deviceAddress == ingredient.deviceAddress }
 
             if (foundIngredient != null){
-                foundIngredient.marker = updateMarker(ingredient)
+                foundIngredient.longitude = ingredient.longitude
+                foundIngredient.latitude = ingredient.latitude
+                foundIngredient.marker = updateMarker(foundIngredient)
             } else {
                 ingredient.marker = createMarker(ingredient)
                 ingredients.add(ingredient)
@@ -333,8 +335,12 @@ class MainContent : AppCompatActivity(), OnMapReadyCallback {
                             wifiP2pManager.discoverPeers(
                                 wifiP2pChannel,
                                 object : WifiP2pManager.ActionListener {
-                                    override fun onSuccess() {}
-                                    override fun onFailure(error: Int) {}
+                                    override fun onSuccess() {
+                                        Log.d(Constants.TAG_WIFI, "DISCOVERING PEERS")
+                                    }
+                                    override fun onFailure(error: Int) {
+                                        Log.e(Constants.TAG_WIFI, "DISCOVERING PEERS")
+                                    }
                                 })
                         }
 
