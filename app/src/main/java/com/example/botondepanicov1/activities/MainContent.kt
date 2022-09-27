@@ -18,8 +18,6 @@ import androidx.appcompat.app.AppCompatActivity
 import com.example.botondepanicov1.R
 import com.example.botondepanicov1.services.AlarmService
 import com.example.botondepanicov1.util.Constants
-import com.example.botondepanicov1.util.GPSUtils
-import com.example.botondepanicov1.util.IngredientUtils
 import com.example.botondepanicov1.wifi_direct.Encoder
 import com.example.botondepanicov1.wifi_direct.Ingredient
 import com.google.android.gms.common.api.ResolvableApiException
@@ -50,8 +48,10 @@ class MainContent : AppCompatActivity(), OnMapReadyCallback {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main_content)
 
-        createLocationRequest()
+        //createLocationRequest()
         init()
+        setDnsSdResponseListeners()
+
         locationUpdates()
     }
 
@@ -137,25 +137,28 @@ class MainContent : AppCompatActivity(), OnMapReadyCallback {
 
         try {
             lm.requestLocationUpdates(
-                LocationManager.GPS_PROVIDER, 10000, 0f
+                LocationManager.GPS_PROVIDER, 5000, 0f
             ) { location ->
-                println("TAG_WIFI $location")
-                println("TAG_WIFI ${location.longitude}, ${location.latitude}")
-                if (myself == null) {
+                println("TAG_WIFI location changed")
+                /*if (myself == null) {
                     setupMyLocation(location)
                 } else {
                     updateMarker(myself!!, location)
                 }
-                sendLocationUpdate() //TODO aquí puede implementarse la logica del update marker
+                sendLocationUpdate() //TODO aquí puede implementarse la logica del update marker*/
+
+                //Proccess for clear, add and then discoverpeers
+
+                broadcastUpdate()
+                discoverUpdates()
             }
         } catch (e: Exception) {
-            Log.v("Sergio", e.toString())
+            Log.e("Sergio", e.toString())
         }
     }
 
     private fun updateMarker(ingredient: Ingredient, location: Location) {
         ingredient.marker?.position = LatLng(location.latitude, location.longitude)
-
     }
 
     private fun createMarker(ingredient: Ingredient) {
@@ -167,8 +170,6 @@ class MainContent : AppCompatActivity(), OnMapReadyCallback {
         )
     }
 
-    //Todo hacer el caso en el que está en otro zoom. Actualizar la cámara pero no el zoom...
-    // ahora que pienso, si se mueve la cámara cuando el usuario está viendo otra ubicación puede ser incómodo
     private fun updateCamera(ingredient: Ingredient) {
         val cameraUpdate: CameraUpdate =
             CameraUpdateFactory.newLatLngZoom(
@@ -181,7 +182,36 @@ class MainContent : AppCompatActivity(), OnMapReadyCallback {
 
     //TODO ejecutar esto cada vez que cambia la ubicación
     private fun sendLocationUpdate() {
-        val message = IngredientUtils.ingredientToHashMap(myself!!)
+
+    }
+
+    private fun serviceRequest() {
+
+    }
+
+    private fun discoverService() {
+
+    }
+
+    private fun clearLocalServices() {
+        wifiP2pManager.clearLocalServices(wifiP2pChannel, object : WifiP2pManager.ActionListener {
+            override fun onSuccess() {
+                Log.d(Constants.TAG_WIFI, "Success. clearLocalServices")
+            }
+
+            override fun onFailure(arg0: Int) {
+                Log.e(
+                    Constants.TAG_WIFI,
+                    "Command failed. clearLocalServices"
+                )
+            }
+        })
+    }
+
+    private fun addLocalService() {
+        //val message = IngredientUtils.ingredientToHashMap(myself!!)
+        val message = HashMap<String, String>()
+        message["Name"] = "David: ${Math.random()}";
 
         val serviceInfo =
             WifiP2pDnsSdServiceInfo.newInstance("_test", "_presence._tcp", message)
@@ -191,29 +221,27 @@ class MainContent : AppCompatActivity(), OnMapReadyCallback {
             serviceInfo,
             object : WifiP2pManager.ActionListener {
                 override fun onSuccess() {
-                    Log.d(Constants.TAG_WIFI, "Success! Adding local service 1")
+                    Log.d(Constants.TAG_WIFI, "Success! addLocalService")
                 }
 
                 override fun onFailure(arg0: Int) {
-                    Log.d(
+                    Log.e(
                         Constants.TAG_WIFI,
-                        "Command failed.  Check for P2P_UNSUPPORTED, ERROR, or BUSY." +
-                                "\n Adding local service 1"
+                        "Command failed.  addLocalService"
                     )
                 }
             })
     }
 
-    //todo Primero setear el myself
-    private fun discoverService() {
+    private fun setDnsSdResponseListeners() {
         val txtListener = WifiP2pManager.DnsSdTxtRecordListener { _, record, device ->
+            Log.d(Constants.TAG_WIFI, "setDnsSdResponseListeners")
             Log.d(
                 Constants.TAG_WIFI,
-                "DnsSdTxtRecordListener 2" +
-                        "\n record: $record"
+                "Arriving message (in quotes) record: $record ${Math.random()}"
             )
 
-/*            val ingredient = Ingredient().apply {
+            /*val ingredient = Ingredient().apply {
                 deviceName = record["index"]!!
                 deviceAddress = device.deviceAddress
                 longitude = java.lang.Double.valueOf(record["latitude"]!!)
@@ -222,7 +250,7 @@ class MainContent : AppCompatActivity(), OnMapReadyCallback {
                 distance = GPSUtils.calculateDistance(currentLocation, latitude, longitude)
             }*/
 
-            val ingredientV2 = IngredientUtils.hashMapToIngredient(record)
+            /*val ingredientV2 = IngredientUtils.hashMapToIngredient(record)
             createMarker(ingredientV2)
             ingredientV2.deviceAddress = device.deviceAddress
             ingredientV2.deviceName = device.deviceName
@@ -234,7 +262,7 @@ class MainContent : AppCompatActivity(), OnMapReadyCallback {
                 ingredientV2.longitude
             )
 
-            println("TAG_WIFI. $ingredientV2")
+            println("TAG_WIFI. $ingredientV2")*/
 
             //todo why
             //distance = ingredient.distance
@@ -257,44 +285,158 @@ class MainContent : AppCompatActivity(), OnMapReadyCallback {
         }
 
         wifiP2pManager.setDnsSdResponseListeners(wifiP2pChannel, null, txtListener)
+    }
 
-        val serviceRequest = WifiP2pDnsSdServiceRequest.newInstance()
+    private fun clearServiceRequests() {
+        wifiP2pManager.clearServiceRequests(wifiP2pChannel, object : WifiP2pManager.ActionListener {
+            override fun onSuccess() {
+                Log.d(Constants.TAG_WIFI, "Success! clearServiceRequests")
+            }
+
+            override fun onFailure(code: Int) {
+                Log.e(
+                    Constants.TAG_WIFI,
+                    "Command failed. clearServiceRequests"
+                )
+            }
+        })
+    }
+
+    private fun addServiceRequest() {
+        val serviceRequest = WifiP2pDnsSdServiceRequest.newInstance("_test", "_presence._tcp")
 
         wifiP2pManager.addServiceRequest(
             wifiP2pChannel,
             serviceRequest,
             object : WifiP2pManager.ActionListener {
                 override fun onSuccess() {
-                    Log.d(Constants.TAG_WIFI, "Success! Adding service Request 3")
+                    Log.d(Constants.TAG_WIFI, "Success! addServiceRequest")
                 }
 
                 override fun onFailure(code: Int) {
-                    Log.d(
+                    Log.e(
                         Constants.TAG_WIFI,
-                        "Command failed.  Check for P2P_UNSUPPORTED, ERROR, or BUSY." +
-                                "\n Adding service request 3"
-                    )
-                }
-            }
-        )
-
-        wifiP2pManager.discoverServices(
-            wifiP2pChannel,
-            object : WifiP2pManager.ActionListener {
-                override fun onSuccess() {
-                    Log.d(Constants.TAG_WIFI, "Success! Discovering services 4")
-                }
-
-                override fun onFailure(code: Int) {
-                    Log.d(
-                        Constants.TAG_WIFI,
-                        "Command failed.  Check for P2P_UNSUPPORTED, ERROR, or BUSY." +
-                                "\n Discovering services 4"
+                        "Command failed. addServiceRequest"
                     )
                 }
             }
         )
     }
+
+    private fun discoverServices() {
+        wifiP2pManager.discoverServices(
+            wifiP2pChannel,
+            object : WifiP2pManager.ActionListener {
+                override fun onSuccess() {
+                    Log.d(Constants.TAG_WIFI, "Success! discoverServices")
+                }
+
+                override fun onFailure(code: Int) {
+                    Log.e(
+                        Constants.TAG_WIFI,
+                        "Command failed. discoverServices"
+                    )
+                }
+            }
+        )
+    }
+
+
+    private fun broadcastUpdate() {
+        wifiP2pManager.clearLocalServices(wifiP2pChannel, object : WifiP2pManager.ActionListener {
+            override fun onSuccess() {
+                Log.d(Constants.TAG_WIFI, "Success. clearLocalServices")
+
+                //val message = IngredientUtils.ingredientToHashMap(myself!!)
+                val message = HashMap<String, String>()
+                message["Name"] = "David: ${Math.random()}";
+
+                val serviceInfo =
+                    WifiP2pDnsSdServiceInfo.newInstance("_test", "_presence._tcp", message)
+
+                wifiP2pManager.addLocalService(
+                    wifiP2pChannel,
+                    serviceInfo,
+                    object : WifiP2pManager.ActionListener {
+                        override fun onSuccess() {
+                            Log.d(Constants.TAG_WIFI, "Success! addLocalService")
+
+                            wifiP2pManager.discoverPeers(
+                                wifiP2pChannel,
+                                object : WifiP2pManager.ActionListener {
+                                    override fun onSuccess() {}
+                                    override fun onFailure(error: Int) {}
+                                })
+                        }
+
+                        override fun onFailure(arg0: Int) {
+                            Log.e(
+                                Constants.TAG_WIFI,
+                                "Command failed.  addLocalService"
+                            )
+                        }
+                    })
+            }
+
+            override fun onFailure(arg0: Int) {
+                Log.e(
+                    Constants.TAG_WIFI,
+                    "Command failed. clearLocalServices $arg0"
+                )
+            }
+        })
+    }
+
+    private fun discoverUpdates() {
+        wifiP2pManager.clearServiceRequests(wifiP2pChannel, object : WifiP2pManager.ActionListener {
+            override fun onSuccess() {
+                Log.d(Constants.TAG_WIFI, "Success! clearServiceRequests")
+
+                val serviceRequest = WifiP2pDnsSdServiceRequest.newInstance("_test", "_presence._tcp")
+
+                wifiP2pManager.addServiceRequest(
+                    wifiP2pChannel,
+                    serviceRequest,
+                    object : WifiP2pManager.ActionListener {
+                        override fun onSuccess() {
+                            Log.d(Constants.TAG_WIFI, "Success! addServiceRequest")
+
+                            wifiP2pManager.discoverServices(
+                                wifiP2pChannel,
+                                object : WifiP2pManager.ActionListener {
+                                    override fun onSuccess() {
+                                        Log.d(Constants.TAG_WIFI, "Success! discoverServices")
+                                    }
+
+                                    override fun onFailure(code: Int) {
+                                        Log.e(
+                                            Constants.TAG_WIFI,
+                                            "Command failed. discoverServices"
+                                        )
+                                    }
+                                }
+                            )
+                        }
+
+                        override fun onFailure(code: Int) {
+                            Log.e(
+                                Constants.TAG_WIFI,
+                                "Command failed. addServiceRequest"
+                            )
+                        }
+                    }
+                )
+            }
+
+            override fun onFailure(code: Int) {
+                Log.e(
+                    Constants.TAG_WIFI,
+                    "Command failed. clearServiceRequests $code"
+                )
+            }
+        })
+    }
+
 
     private fun createLocationRequest() {
         //TODO iniciarlizar en el init
