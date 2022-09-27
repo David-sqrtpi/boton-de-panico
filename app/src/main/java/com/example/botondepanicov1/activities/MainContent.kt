@@ -238,7 +238,7 @@ class MainContent : AppCompatActivity(), OnMapReadyCallback {
             Log.d(Constants.TAG_WIFI, "setDnsSdResponseListeners")
             Log.d(
                 Constants.TAG_WIFI,
-                "Arriving message (in quotes) record: $record ${Math.random()}"
+                "Arriving message (second implementation) record: $record ${Math.random()}"
             )
 
             /*val ingredient = Ingredient().apply {
@@ -349,7 +349,7 @@ class MainContent : AppCompatActivity(), OnMapReadyCallback {
 
                 //val message = IngredientUtils.ingredientToHashMap(myself!!)
                 val message = HashMap<String, String>()
-                message["Name"] = "David: ${Math.random()}";
+                message["Name"] = "${Build.MANUFACTURER.uppercase(Locale.ROOT)} ${Build.MODEL}: ${Math.random()}";
 
                 val serviceInfo =
                     WifiP2pDnsSdServiceInfo.newInstance("_test", "_presence._tcp", message)
