@@ -4,7 +4,10 @@ import android.location.Location
 
 class GPSUtils {
     companion object {
-         fun calculateDistance(latitude0: Double, longitude0: Double, latitude1: Double, longitude1: Double): Double {
+         fun calculateDistance(latitude0: Double,
+                               longitude0: Double,
+                               latitude1: Double,
+                               longitude1: Double): Double {
             val location0 = Location("")
             location0.latitude = latitude0
             location0.longitude = longitude0

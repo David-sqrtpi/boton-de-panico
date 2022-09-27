@@ -8,7 +8,7 @@ data class Ingredient(
     var deviceAddress: String = "",
     var longitude: Double = 0.0,
     var latitude: Double = 0.0,
-    var date: String = "",
+    var date: String = "", //TODO puede ser útil mostrarlo en myself
     var distance: Double = 0.0,
     var marker: Marker? = null
 )

@@ -18,12 +18,15 @@ import androidx.appcompat.app.AppCompatActivity
 import com.example.botondepanicov1.R
 import com.example.botondepanicov1.services.AlarmService
 import com.example.botondepanicov1.util.Constants
+import com.example.botondepanicov1.util.GPSUtils
+import com.example.botondepanicov1.util.IngredientUtils
 import com.example.botondepanicov1.wifi_direct.Encoder
 import com.example.botondepanicov1.wifi_direct.Ingredient
 import com.google.android.gms.common.api.ResolvableApiException
 import com.google.android.gms.location.*
 import com.google.android.gms.maps.*
 import com.google.android.gms.maps.model.LatLng
+import com.google.android.gms.maps.model.Marker
 import com.google.android.gms.maps.model.MarkerOptions
 import com.google.android.gms.tasks.Task
 import java.util.*
@@ -50,7 +53,7 @@ class MainContent : AppCompatActivity(), OnMapReadyCallback {
 
         //createLocationRequest()
         init()
-        setDnsSdResponseListeners()
+        onReceivedLocation()
 
         locationUpdates()
     }
@@ -101,16 +104,13 @@ class MainContent : AppCompatActivity(), OnMapReadyCallback {
                 MODE_PRIVATE
             ).getString(Constants.PREFERENCES_USERNAME, "Usuario cercano")!!
             deviceName = "${Build.MANUFACTURER.uppercase(Locale.ROOT)} ${Build.MODEL}"
-            deviceAddress = Constants.MYSELF_ADDRESS
             latitude = location.latitude
             longitude = location.longitude
             date = Encoder.dateToString(Date())!!
         }
 
-        createMarker(myself!!)
+        myself!!.marker = createMarker(myself!!)
         updateCamera(myself!!)
-        sendLocationUpdate() //TODO aquí puede implementarse la logica del update marker
-        discoverService()
     }
 
     //TODO iniciar y detener el servicio dependiendo de la bandera. También detener el servicio
@@ -140,14 +140,13 @@ class MainContent : AppCompatActivity(), OnMapReadyCallback {
                 LocationManager.GPS_PROVIDER, 5000, 0f
             ) { location ->
                 println("TAG_WIFI location changed")
-                /*if (myself == null) {
+                if (myself == null) {
                     setupMyLocation(location)
                 } else {
-                    updateMarker(myself!!, location)
+                    myself!!.latitude = location.latitude
+                    myself!!.longitude = location.longitude
+                    myself!!.marker = updateMarker(myself!!)
                 }
-                sendLocationUpdate() //TODO aquí puede implementarse la logica del update marker*/
-
-                //Proccess for clear, add and then discoverpeers
 
                 broadcastUpdate()
                 discoverUpdates()
@@ -157,12 +156,16 @@ class MainContent : AppCompatActivity(), OnMapReadyCallback {
         }
     }
 
-    private fun updateMarker(ingredient: Ingredient, location: Location) {
-        ingredient.marker?.position = LatLng(location.latitude, location.longitude)
+    //TODO verificar si es necesario retornar el marker
+    //TODO verificar parámetros
+    private fun updateMarker(ingredient: Ingredient): Marker? {
+        ingredient.marker?.position = LatLng(ingredient.latitude, ingredient.longitude)
+        return ingredient.marker
     }
 
-    private fun createMarker(ingredient: Ingredient) {
-        ingredient.marker = googleMap.addMarker(
+    //TODO verificar parámetros
+    private fun createMarker(ingredient: Ingredient): Marker? {
+        return googleMap.addMarker(
             MarkerOptions()
                 .position(LatLng(ingredient.latitude, ingredient.longitude))
                 .title(ingredient.username)
@@ -178,11 +181,6 @@ class MainContent : AppCompatActivity(), OnMapReadyCallback {
             )
 
         googleMap.moveCamera(cameraUpdate)
-    }
-
-    //TODO ejecutar esto cada vez que cambia la ubicación
-    private fun sendLocationUpdate() {
-
     }
 
     private fun serviceRequest() {
@@ -231,60 +229,6 @@ class MainContent : AppCompatActivity(), OnMapReadyCallback {
                     )
                 }
             })
-    }
-
-    private fun setDnsSdResponseListeners() {
-        val txtListener = WifiP2pManager.DnsSdTxtRecordListener { _, record, device ->
-            Log.d(Constants.TAG_WIFI, "setDnsSdResponseListeners")
-            Log.d(
-                Constants.TAG_WIFI,
-                "Arriving message (second implementation) record: $record ${Math.random()}"
-            )
-
-            /*val ingredient = Ingredient().apply {
-                deviceName = record["index"]!!
-                deviceAddress = device.deviceAddress
-                longitude = java.lang.Double.valueOf(record["latitude"]!!)
-                latitude = java.lang.Double.valueOf(record["longitude"]!!)
-                date = record["date"]!!
-                distance = GPSUtils.calculateDistance(currentLocation, latitude, longitude)
-            }*/
-
-            /*val ingredientV2 = IngredientUtils.hashMapToIngredient(record)
-            createMarker(ingredientV2)
-            ingredientV2.deviceAddress = device.deviceAddress
-            ingredientV2.deviceName = device.deviceName
-
-            ingredientV2.distance = GPSUtils.calculateDistance(
-                myself!!.latitude,
-                myself!!.longitude,
-                ingredientV2.latitude,
-                ingredientV2.longitude
-            )
-
-            println("TAG_WIFI. $ingredientV2")*/
-
-            //todo why
-            //distance = ingredient.distance
-
-            /*if (!isObjectInArray(device.deviceAddress)) {
-                ingredients.add(ingredient)
-
-                val arrayList: ArrayList<Ingredient> = ingredients
-
-                adapter!!.clear()
-                for (i in arrayList.indices) {
-                    adapter!!.add(arrayList[i])
-                }
-
-                lv.setSelection(adapter!!.count - 1)
-
-                Log.d("Add device", java.lang.String.valueOf(adapter!!.count))
-                Log.d("Add device", ingredient.deviceName + " device")
-            }*/
-        }
-
-        wifiP2pManager.setDnsSdResponseListeners(wifiP2pChannel, null, txtListener)
     }
 
     private fun clearServiceRequests() {
@@ -342,17 +286,42 @@ class MainContent : AppCompatActivity(), OnMapReadyCallback {
     }
 
 
+    //TODO ignorar si no se ha configurado myself (pensar en eso, myself es nullable)
+    private fun onReceivedLocation() {
+        val txtListener = WifiP2pManager.DnsSdTxtRecordListener { _, record, device ->
+            Log.d(Constants.TAG_WIFI, "setDnsSdResponseListeners")
+            Log.d(
+                Constants.TAG_WIFI,
+                "Arriving message (second implementation) record: $record"
+            )
+
+            val ingredient = IngredientUtils.hashMapToIngredient(record, device, myself)
+
+            val foundIngredient =
+                ingredients.find { x -> x.deviceAddress == ingredient.deviceAddress }
+
+            if (foundIngredient != null){
+                foundIngredient.marker = updateMarker(ingredient)
+            } else {
+                ingredient.marker = createMarker(ingredient)
+                ingredients.add(ingredient)
+            }
+        }
+        // TODO Comprobar que los valores del ingrediente actualizado
+        // se muestren en la pantalla
+
+        wifiP2pManager.setDnsSdResponseListeners(wifiP2pChannel, null, txtListener)
+    }
+
     private fun broadcastUpdate() {
         wifiP2pManager.clearLocalServices(wifiP2pChannel, object : WifiP2pManager.ActionListener {
             override fun onSuccess() {
                 Log.d(Constants.TAG_WIFI, "Success. clearLocalServices")
 
-                //val message = IngredientUtils.ingredientToHashMap(myself!!)
-                val message = HashMap<String, String>()
-                message["Name"] = "${Build.MANUFACTURER.uppercase(Locale.ROOT)} ${Build.MODEL}: ${Math.random()}";
+                val record = IngredientUtils.ingredientToHashMap(myself!!)
 
                 val serviceInfo =
-                    WifiP2pDnsSdServiceInfo.newInstance("_test", "_presence._tcp", message)
+                    WifiP2pDnsSdServiceInfo.newInstance("_test", "_presence._tcp", record)
 
                 wifiP2pManager.addLocalService(
                     wifiP2pChannel,
