@@ -8,8 +8,11 @@ import kotlin.collections.HashMap
 
 class IngredientUtils {
     companion object {
-        fun ingredientToHashMap(ingredient: Ingredient): HashMap<String, String> {
+        fun ingredientToHashMap(ingredient: Ingredient?): HashMap<String, String>? {
             val message = HashMap<String, String>()
+            if(ingredient == null) {
+                return message
+            }
 
             message["u"] = ingredient.username
             message["n"] = ingredient.deviceName
