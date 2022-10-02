@@ -3,6 +3,7 @@ package com.example.botondepanicov1.activities
 import android.annotation.SuppressLint
 import android.content.Intent
 import android.content.IntentSender
+import android.content.res.Resources
 import android.location.Location
 import android.location.LocationManager
 import android.net.wifi.WifiManager
@@ -18,19 +19,15 @@ import androidx.appcompat.app.AppCompatActivity
 import com.example.botondepanicov1.R
 import com.example.botondepanicov1.services.AlarmService
 import com.example.botondepanicov1.util.Constants
-import com.example.botondepanicov1.util.GPSUtils
 import com.example.botondepanicov1.util.IngredientUtils
-import com.example.botondepanicov1.wifi_direct.Encoder
 import com.example.botondepanicov1.wifi_direct.Ingredient
 import com.google.android.gms.common.api.ResolvableApiException
 import com.google.android.gms.location.*
 import com.google.android.gms.maps.*
-import com.google.android.gms.maps.model.LatLng
-import com.google.android.gms.maps.model.Marker
-import com.google.android.gms.maps.model.MarkerOptions
+import com.google.android.gms.maps.model.*
 import com.google.android.gms.tasks.Task
 import java.util.*
-import kotlin.collections.HashMap
+
 
 class MainContent : AppCompatActivity(), OnMapReadyCallback {
     private var toggleAlarm = false //TODO averiguar si se puede simplificar
@@ -65,19 +62,29 @@ class MainContent : AppCompatActivity(), OnMapReadyCallback {
 
     override fun onMapReady(googleMap: GoogleMap) {
         this.googleMap = googleMap
-        /*val file = File(applicationContext.filesDir, "bogota_tiles.mbtiles")
 
-        val tileProvider: TileProvider =
-            MapBoxOfflineTileProvider(file)
-
-        googleMap
-            .addTileOverlay(TileOverlayOptions().tileProvider(tileProvider))*/
+        try {
+            val success = googleMap.setMapStyle(
+                MapStyleOptions.loadRawResourceStyle(
+                    this, R.raw.style_json
+                )
+            )
+            if (!success) {
+                Log.e("mapStyling", "Style parsing failed.")
+            }
+        } catch (e: Resources.NotFoundException) {
+            Log.e("mapStyling", "Can't find style. Error: ", e)
+        }
 
         googleMap.mapType = GoogleMap.MAP_TYPE_NORMAL
-
         googleMap.setMaxZoomPreference(100f)
-
         googleMap.setMinZoomPreference(5f)
+
+        /*val file = File(applicationContext.filesDir, "bogota_tiles.mbtiles")
+        val tileProvider: TileProvider =
+            MapBoxOfflineTileProvider(file)
+        googleMap
+            .addTileOverlay(TileOverlayOptions().tileProvider(tileProvider))*/
     }
 
     private fun init() {
@@ -164,16 +171,29 @@ class MainContent : AppCompatActivity(), OnMapReadyCallback {
     //TODO verificar parámetros
     private fun updateMarker(ingredient: Ingredient): Marker? {
         ingredient.marker?.position = LatLng(ingredient.latitude, ingredient.longitude)
+        ingredient.marker?.snippet = "Distancia: ${String.format("%.3f", ingredient.distance)} metros"
+
         return ingredient.marker
     }
 
     //TODO verificar parámetros
     private fun createMarker(ingredient: Ingredient): Marker? {
+        if(myself != null && ingredient == myself){
+            return googleMap.addMarker(
+                MarkerOptions()
+                    .position(LatLng(ingredient.latitude, ingredient.longitude))
+                    .title("Yo")
+                    .snippet(null)
+                    .visible(true)
+            )
+        }
+
         return googleMap.addMarker(
             MarkerOptions()
                 .position(LatLng(ingredient.latitude, ingredient.longitude))
                 .title(ingredient.username)
-                .visible(true)
+                .snippet("Distancia: ${String.format("%.3f", ingredient.distance)} metros")
+                .icon(BitmapDescriptorFactory.defaultMarker((1..360).random().toFloat()))
                 .visible(true)
         )
     }
@@ -310,6 +330,7 @@ class MainContent : AppCompatActivity(), OnMapReadyCallback {
             if (foundIngredient != null){
                 foundIngredient.longitude = ingredient.longitude
                 foundIngredient.latitude = ingredient.latitude
+                foundIngredient.distance = ingredient.distance
                 foundIngredient.marker = updateMarker(foundIngredient)
             } else {
                 ingredient.marker = createMarker(ingredient)
