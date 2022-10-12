@@ -17,6 +17,7 @@ import android.widget.ImageButton
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import com.example.botondepanicov1.R
+import com.example.botondepanicov1.core.Role
 import com.example.botondepanicov1.services.AlarmService
 import com.example.botondepanicov1.util.Constants
 import com.example.botondepanicov1.util.IngredientUtils
@@ -26,6 +27,7 @@ import com.google.android.gms.location.*
 import com.google.android.gms.maps.*
 import com.google.android.gms.maps.model.*
 import com.google.android.gms.tasks.Task
+import kotlinx.android.synthetic.main.activity_main_content.*
 import java.util.*
 
 
@@ -39,7 +41,6 @@ class MainContent : AppCompatActivity(), OnMapReadyCallback {
     private lateinit var wifiP2pChannel: WifiP2pManager.Channel
     private lateinit var wifiP2pManager: WifiP2pManager
 
-    private lateinit var currentLocation: Location
     private lateinit var locationRequest: LocationRequest
 
     private var myself: Ingredient? = null
@@ -104,6 +105,18 @@ class MainContent : AppCompatActivity(), OnMapReadyCallback {
             }
         }
 
+        change_role.setOnClickListener {
+            if (myself != null) {
+                if (myself!!.role == Role.SURVIVOR.ordinal) {
+                    myself!!.role = Role.RESCUER.ordinal
+                    change_role.text = "Cambiar a sobreviviente"
+                } else {
+                    myself!!.role = Role.SURVIVOR.ordinal
+                    change_role.text = "Cambiar a rescatista"
+                }
+            }
+        }
+
         val mapFragment = supportFragmentManager
             .findFragmentById(R.id.map) as SupportMapFragment
         mapFragment.getMapAsync(this)
@@ -118,14 +131,14 @@ class MainContent : AppCompatActivity(), OnMapReadyCallback {
             deviceName = "${Build.MANUFACTURER.uppercase(Locale.ROOT)} ${Build.MODEL}"
             latitude = location.latitude
             longitude = location.longitude
+            marker = createMarker(this)
         }
 
-        myself!!.marker = createMarker(myself!!)
         updateCamera(myself!!)
     }
 
     //TODO iniciar y detener el servicio dependiendo de la bandera. También detener el servicio
-    //Cuando termina la actividad
+    // Cuando termina la actividad
     private fun toggleOn() {
         toggleAlarmIB.setImageResource(R.drawable.alarm)
 
@@ -150,7 +163,10 @@ class MainContent : AppCompatActivity(), OnMapReadyCallback {
             lm.requestLocationUpdates(
                 LocationManager.GPS_PROVIDER, 5000, 0f
             ) { location ->
-                Log.d(Constants.TAG_WIFI, "Latitude: ${location.latitude}, longitude: ${location.longitude}")
+                Log.d(
+                    Constants.TAG_WIFI,
+                    "Latitude: ${location.latitude}, longitude: ${location.longitude}"
+                )
                 if (myself == null) {
                     setupMyLocation(location)
                 } else {
@@ -171,14 +187,15 @@ class MainContent : AppCompatActivity(), OnMapReadyCallback {
     //TODO verificar parámetros
     private fun updateMarker(ingredient: Ingredient): Marker? {
         ingredient.marker?.position = LatLng(ingredient.latitude, ingredient.longitude)
-        ingredient.marker?.snippet = "Distancia: ${String.format("%.3f", ingredient.distance)} metros"
+        ingredient.marker?.snippet =
+            "Distancia: ${String.format("%.3f", ingredient.distance)} metros"
 
         return ingredient.marker
     }
 
     //TODO verificar parámetros
     private fun createMarker(ingredient: Ingredient): Marker? {
-        if(myself != null && ingredient == myself){
+        if (myself != null && ingredient == myself) {
             return googleMap.addMarker(
                 MarkerOptions()
                     .position(LatLng(ingredient.latitude, ingredient.longitude))
@@ -250,7 +267,7 @@ class MainContent : AppCompatActivity(), OnMapReadyCallback {
         wifiP2pManager.discoverPeers(
             wifiP2pChannel,
             object : WifiP2pManager.ActionListener {
-                override fun onSuccess() { }
+                override fun onSuccess() {}
 
                 override fun onFailure(error: Int) {
                     Log.e(Constants.TAG_WIFI, "DISCOVERING PEERS")
@@ -299,7 +316,7 @@ class MainContent : AppCompatActivity(), OnMapReadyCallback {
         wifiP2pManager.discoverServices(
             wifiP2pChannel,
             object : WifiP2pManager.ActionListener {
-                override fun onSuccess() { }
+                override fun onSuccess() {}
 
                 override fun onFailure(code: Int) {
                     Log.e(
@@ -320,25 +337,28 @@ class MainContent : AppCompatActivity(), OnMapReadyCallback {
                 "Arriving message (second implementation) record: $record"
             )
 
-            if(record.isEmpty()) return@DnsSdTxtRecordListener
+            if (record.isEmpty()) return@DnsSdTxtRecordListener
 
             val ingredient = IngredientUtils.hashMapToIngredient(record, device, myself)
 
             val foundIngredient =
                 ingredients.find { x -> x.deviceAddress == ingredient.deviceAddress }
 
-            if (foundIngredient != null){
+            if (foundIngredient != null) {
                 foundIngredient.longitude = ingredient.longitude
                 foundIngredient.latitude = ingredient.latitude
                 foundIngredient.distance = ingredient.distance
                 foundIngredient.marker = updateMarker(foundIngredient)
+                foundIngredient.role = ingredient.role
             } else {
                 ingredient.marker = createMarker(ingredient)
                 ingredients.add(ingredient)
             }
+
+            val survivorsAmount = ingredients.count { x -> x.role == Role.SURVIVOR.ordinal }
+            survivors.text = "Sobrevivientes:   ${survivorsAmount}"
+            rescuers.text = "Rescatistas:   ${ingredients.size - survivorsAmount}"
         }
-        // TODO Comprobar que los valores del ingrediente actualizado
-        // se muestren en la pantalla
 
         wifiP2pManager.setDnsSdResponseListeners(wifiP2pChannel, null, txtListener)
     }

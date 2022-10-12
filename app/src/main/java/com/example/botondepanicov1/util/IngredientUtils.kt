@@ -20,7 +20,8 @@ class IngredientUtils {
             message["o"] = ingredient.longitude.toString()
             message["a"] = ingredient.latitude.toString()
             message["d"] = Encoder.dateToString(Date())!!
-            message["r"] = ingredient.role
+            message["r"] = ingredient.role.toString()
+            message["r"] = ingredient.role.toString()
 
             return message
         }
@@ -36,7 +37,7 @@ class IngredientUtils {
                 latitude = java.lang.Double.valueOf(message["a"]!!)
                 date = message["d"]!!
                 deviceAddress = device.deviceAddress
-                role = message["r"]!!
+                role = message["r"]!!.toInt()
             }
 
             if (myself != null) {

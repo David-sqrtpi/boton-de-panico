@@ -11,7 +11,6 @@ import com.example.botondepanicov1.util.Constants
 import com.example.botondepanicov1.wifi_direct.BuscandoDispositivosWifi
 import kotlinx.android.synthetic.main.activity_login.*
 
-//TODO mostrar el nombre guardado en el sp en el et
 class Login : AppCompatActivity() {
     private lateinit var sharedPreferences: SharedPreferences
     override fun onCreate(savedInstanceState: Bundle?) {

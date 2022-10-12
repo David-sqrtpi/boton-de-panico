@@ -43,8 +43,8 @@
             app:behavior_hideable="false"
             app:shapeAppearance="?attr/shapeAppearanceLargeComponent"
             android:elevation="1dp"
-            app:behavior_peekHeight="350dp"
-            android:maxHeight="350dp">
+            app:behavior_peekHeight="250dp"
+            android:maxHeight="250dp">
             <TextView
                 android:id="@+id/survivors"
                 android:layout_width="wrap_content"
