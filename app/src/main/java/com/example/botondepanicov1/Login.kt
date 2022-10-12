@@ -13,6 +13,7 @@ import kotlinx.android.synthetic.main.activity_login.*
 
 //TODO mostrar el nombre guardado en el sp en el et
 class Login : AppCompatActivity() {
+    private lateinit var sharedPreferences: SharedPreferences
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_login)
@@ -36,6 +37,10 @@ class Login : AppCompatActivity() {
                 )
             )
         }
+
+        sharedPreferences = getSharedPreferences(Constants.PREFERENCES_KEY, MODE_PRIVATE)
+        val savedName = sharedPreferences.getString(Constants.PREFERENCES_USERNAME, "")
+        user.setText(savedName)
     }
 
     private val onContinuarClickListener = View.OnClickListener {
@@ -55,7 +60,6 @@ class Login : AppCompatActivity() {
     }
 
     private fun saveName(name: String) {
-        val sharedPreferences: SharedPreferences = getSharedPreferences(Constants.PREFERENCES_KEY, MODE_PRIVATE)
         val editor = sharedPreferences.edit()
         editor.putString(Constants.PREFERENCES_USERNAME, name.trim())
         editor.apply()

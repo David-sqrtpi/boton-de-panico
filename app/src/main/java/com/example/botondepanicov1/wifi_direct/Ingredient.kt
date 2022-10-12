@@ -10,5 +10,6 @@ data class Ingredient(
     var latitude: Double = 0.0,
     var date: String = "", //TODO enviar la fecha por el wifi (para saber la fecha remota de actualización GPS)
     var distance: Double = 0.0,
-    var marker: Marker? = null
+    var marker: Marker? = null,
+    var role: String = "s"//survivor
 )
