@@ -72,8 +72,6 @@ class BuscandoDispositivosWifi : AppCompatActivity() {
     //WIFI Direct configuration
     @SuppressLint("MissingPermission")
     private fun start() {
-        turnGPSOn()
-
         val map = MapDevicesAdapter(this, R.layout.adapter_dispositivos_encontrados_wifi)
         adapter = map
         lv.adapter = adapter
@@ -118,15 +116,6 @@ class BuscandoDispositivosWifi : AppCompatActivity() {
     }
 
     //Se va a reemplazar por el Google para dispositivos que admitan los servicio de Google
-    private fun turnGPSOn() {
-        val provider =
-            Settings.Secure.getString(contentResolver, Settings.Secure.LOCATION_PROVIDERS_ALLOWED)
-        if (!provider.contains("gps")) {
-            Toast.makeText(this, "Activando GPS", Toast.LENGTH_SHORT).show()
-            val intent1 = Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS)
-            startActivity(intent1)
-        }
-    }
 
     @SuppressLint("MissingPermission")
     private fun locationUpdates() {

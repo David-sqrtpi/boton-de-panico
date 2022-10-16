@@ -13,18 +13,25 @@ import android.os.Bundle
 import android.os.RemoteException
 import android.preference.PreferenceManager
 import android.util.Log
+import android.widget.ArrayAdapter
+import android.widget.ListAdapter
 import android.widget.ListView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import com.example.botondepanicov1.R
+import com.example.botondepanicov1.adapters.IngredientAdapter
+import com.example.botondepanicov1.core.Role
 import com.example.botondepanicov1.models.BluetoothFrame
+import com.example.botondepanicov1.wifi_direct.Ingredient
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.OnMapReadyCallback
+import kotlinx.android.synthetic.main.activity_buscando_dispositivos_bluetooth.*
 import org.altbeacon.beacon.*
 import java.net.NetworkInterface
 import java.text.SimpleDateFormat
 import java.util.*
+import kotlin.collections.ArrayList
 import kotlin.experimental.and
 
 class BuscandoDispositivosBluetooth : AppCompatActivity(), OnMapReadyCallback, BeaconConsumer {
@@ -33,9 +40,9 @@ class BuscandoDispositivosBluetooth : AppCompatActivity(), OnMapReadyCallback, B
     private var btAdapter: BluetoothAdapter? = null
     private var beaconManager: BeaconManager? = null
     private var beaconTransmitter: BeaconTransmitter? = null
-    //private var listaBluetooth: ListView? = null
+    private var listaBluetooth: ListView? = null
     private var mLista: MutableList<BluetoothFrame> = ArrayList()
-    //private var mAdapter: AdapterBluetooth? = null
+    private var mAdapter: AdapterBluetooth? = null
     private lateinit var googleMap: GoogleMap
 
     //Direccion MAC
@@ -44,6 +51,119 @@ class BuscandoDispositivosBluetooth : AppCompatActivity(), OnMapReadyCallback, B
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_buscando_dispositivos_bluetooth)
+
+        val ingredients = listOf(
+            Ingredient().apply{
+                username = "Homero Sompson"
+                distance = 123.1
+                role = Role.SURVIVOR.ordinal
+            },
+            Ingredient().apply{
+                username = "Lisa Sompson"
+                distance = 123.1
+                role = Role.RESCUER.ordinal
+            },
+            Ingredient().apply{
+                username = "Bort Sompson"
+                distance = 123.1
+                role = Role.SURVIVOR.ordinal
+            },
+            Ingredient().apply{
+                username = "Marge Sompson"
+                distance = 123.1
+                role = Role.RESCUER.ordinal
+            },
+            Ingredient().apply{
+                username = "Abraham Sompson"
+                distance = 123.1
+                role = Role.SURVIVOR.ordinal
+            },
+            Ingredient().apply{
+                username = "The Game Sompson"
+                distance = 123.1
+                role = Role.SURVIVOR.ordinal
+            },
+            Ingredient().apply{
+                username = "Homero Sompson"
+                distance = 123.1
+                role = Role.SURVIVOR.ordinal
+            },
+            Ingredient().apply{
+                username = "Lisa Sompson"
+                distance = 123.1
+                role = Role.RESCUER.ordinal
+            },
+            Ingredient().apply{
+                username = "Bort Sompson"
+                distance = 123.1
+                role = Role.SURVIVOR.ordinal
+            },
+            Ingredient().apply{
+                username = "Marge Sompson"
+                distance = 123.1
+                role = Role.RESCUER.ordinal
+            },
+            Ingredient().apply{
+                username = "Abraham Sompson"
+                distance = 123.1
+                role = Role.SURVIVOR.ordinal
+            },
+            Ingredient().apply{
+                username = "The Game Sompson"
+                distance = 123.1
+                role = Role.SURVIVOR.ordinal
+            },Ingredient().apply{
+                username = "Homero Sompson"
+                distance = 123.1
+                role = Role.SURVIVOR.ordinal
+            },
+            Ingredient().apply{
+                username = "Lisa Sompson"
+                distance = 123.1
+                role = Role.RESCUER.ordinal
+            },
+            Ingredient().apply{
+                username = "Bort Sompson"
+                distance = 123.1
+                role = Role.SURVIVOR.ordinal
+            },
+            Ingredient().apply{
+                username = "Marge Sompson"
+                distance = 123.1
+                role = Role.RESCUER.ordinal
+            },
+            Ingredient().apply{
+                username = "Abraham Sompson"
+                distance = 123.1
+                role = Role.SURVIVOR.ordinal
+            },
+            Ingredient().apply{
+                username = "The Game Sompson"
+                distance = 123.1
+                role = Role.SURVIVOR.ordinal
+            }
+        )
+        val survivors = ingredients.filter { x -> x.role == Role.SURVIVOR.ordinal }
+        val rescuers = ingredients.filter { x -> x.role == Role.RESCUER.ordinal }
+
+        text_survivors.text = "Sobrevivientes (${survivors.size})"
+        text_rescuers.text = "Sobrevivientes (${rescuers.size})"
+
+        val survivorAdapter = IngredientAdapter(this,
+            R.layout.adapter_dispositivos_encontrados_wifi,
+            survivors
+        )
+
+        val rescuerAdapter = IngredientAdapter(this,
+            R.layout.adapter_dispositivos_encontrados_wifi,
+            rescuers
+        )
+
+        val survivorsList = findViewById<ListView>(R.id.list_survivors)
+        val rescuersList = findViewById<ListView>(R.id.list_rescuers)
+
+        survivorsList.adapter = survivorAdapter
+        rescuersList.adapter = rescuerAdapter
 
         locationUpdates()
 
@@ -60,7 +180,7 @@ class BuscandoDispositivosBluetooth : AppCompatActivity(), OnMapReadyCallback, B
 
         //llama a funcion de validar permisos de localozacion
         checkPermission()
-        //listaBluetooth = findViewById(R.id.listBluetooth)
+        //TODO listaBluetooth = findViewById(R.id.listBluetooth)
         btAdapter = BluetoothAdapter.getDefaultAdapter()
         beaconManager = BeaconManager.getInstanceForApplication(this)
         encenderBluetooth()
@@ -224,12 +344,12 @@ class BuscandoDispositivosBluetooth : AppCompatActivity(), OnMapReadyCallback, B
                 )
 
                 mLista = eliminarDuplicados(mLista, oneBeacon)
-                /*mAdapter = AdapterBluetooth(
+                mAdapter = AdapterBluetooth(
                     this@BuscandoDispositivosBluetooth,
                     R.layout.adapter_dispositivos_encontrados_wifi,
                     mLista
                 )
-                listaBluetooth!!.adapter = mAdapter*/
+                listaBluetooth!!.adapter = mAdapter
             }
         }
         try {

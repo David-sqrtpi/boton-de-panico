@@ -43,20 +43,20 @@ public class AdapterBluetooth extends ArrayAdapter<BluetoothFrame> {
         BluetoothFrame dispostivo = miLista.get(position);
 
         TextView nombre = view.findViewById(R.id.name);
-        nombre.setText("Dispositivo: " + dispostivo.getDeviceName());
+        nombre.setText("Samsung Antonio Cepeda Rodriguez");
 
         TextView distancia = view.findViewById(R.id.distancia);
         if (dispostivo.getDistance() < 0) {
-            distancia.setText("Distancia: " + 0 + "metros");
+            distancia.setText("Distancia: " + 0 + " m");
         } else {
-            distancia.setText("Distancia: " + dispostivo.getDistance() + "metros");
+            distancia.setText("Distancia: " + dispostivo.getDistance() + " m");
         }
 
 
         //TextView indice = view.findViewById(R.id.indice);
         //indice.setText("Fecha de actualización: ");
-        TextView fecha = view.findViewById(R.id.fecha);
-        fecha.setText(dispostivo.getDate());
+//        TextView fecha = view.findViewById(R.id.fecha);
+//        fecha.setText(dispostivo.getDate());
         return view;
     }
 }

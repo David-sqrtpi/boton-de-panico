@@ -21,7 +21,6 @@ class IngredientUtils {
             message["a"] = ingredient.latitude.toString()
             message["d"] = Encoder.dateToString(Date())!!
             message["r"] = ingredient.role.toString()
-            message["r"] = ingredient.role.toString()
 
             return message
         }

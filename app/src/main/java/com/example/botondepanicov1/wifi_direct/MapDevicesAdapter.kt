@@ -47,15 +47,16 @@ ArrayAdapter<Ingredient>(context, resource) {
 
         val inflater =
             this.context.getSystemService(Context.LAYOUT_INFLATER_SERVICE) as LayoutInflater
+
         row = inflater.inflate(R.layout.adapter_dispositivos_encontrados_wifi, parent, false)
         name = row.findViewById(R.id.name)
         distance = row.findViewById(R.id.distancia)
-        date = row.findViewById(R.id.fecha)
-        imageView = row.findViewById(R.id.imageLocation)
-        name.text = "Dispositivo: ${ingredient.deviceName}"
+//        date = row.findViewById(R.id.fecha)
+//        imageView = row.findViewById(R.id.imageLocation)
+        name.text = "Samsung Antonio Cepeda Rodriguez"
         val charDistance = java.lang.String.valueOf(ingredient.distance)
         val distanceString: String = "Distancia: " + java.lang.String.valueOf(ingredient.distance)
-                .substring(0, 3) + " metros"
+                .substring(0, 3) + " m"
 
         distance.text = distanceString
         date.text = "Fecha de actualización:  " + ingredient.date
