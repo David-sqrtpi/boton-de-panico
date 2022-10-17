@@ -13,8 +13,8 @@ import android.os.Bundle
 import android.os.RemoteException
 import android.preference.PreferenceManager
 import android.util.Log
-import android.widget.ArrayAdapter
-import android.widget.ListAdapter
+import android.widget.ExpandableListAdapter
+import android.widget.ExpandableListView
 import android.widget.ListView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
@@ -26,12 +26,10 @@ import com.example.botondepanicov1.models.BluetoothFrame
 import com.example.botondepanicov1.wifi_direct.Ingredient
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.OnMapReadyCallback
-import kotlinx.android.synthetic.main.activity_buscando_dispositivos_bluetooth.*
 import org.altbeacon.beacon.*
 import java.net.NetworkInterface
 import java.text.SimpleDateFormat
 import java.util.*
-import kotlin.collections.ArrayList
 import kotlin.experimental.and
 
 class BuscandoDispositivosBluetooth : AppCompatActivity(), OnMapReadyCallback, BeaconConsumer {
@@ -52,118 +50,110 @@ class BuscandoDispositivosBluetooth : AppCompatActivity(), OnMapReadyCallback, B
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_buscando_dispositivos_bluetooth)
 
-        val ingredients = listOf(
-            Ingredient().apply{
+        val childList = listOf(
+            Ingredient().apply {
                 username = "Homero Sompson"
                 distance = 123.1
                 role = Role.SURVIVOR.ordinal
             },
-            Ingredient().apply{
+            Ingredient().apply {
                 username = "Lisa Sompson"
                 distance = 123.1
                 role = Role.RESCUER.ordinal
             },
-            Ingredient().apply{
+            Ingredient().apply {
                 username = "Bort Sompson"
                 distance = 123.1
                 role = Role.SURVIVOR.ordinal
             },
-            Ingredient().apply{
+            Ingredient().apply {
                 username = "Marge Sompson"
                 distance = 123.1
                 role = Role.RESCUER.ordinal
             },
-            Ingredient().apply{
+            Ingredient().apply {
                 username = "Abraham Sompson"
                 distance = 123.1
                 role = Role.SURVIVOR.ordinal
             },
-            Ingredient().apply{
+            Ingredient().apply {
                 username = "The Game Sompson"
                 distance = 123.1
                 role = Role.SURVIVOR.ordinal
             },
-            Ingredient().apply{
+            Ingredient().apply {
                 username = "Homero Sompson"
                 distance = 123.1
                 role = Role.SURVIVOR.ordinal
             },
-            Ingredient().apply{
+            Ingredient().apply {
                 username = "Lisa Sompson"
                 distance = 123.1
                 role = Role.RESCUER.ordinal
             },
-            Ingredient().apply{
+            Ingredient().apply {
                 username = "Bort Sompson"
                 distance = 123.1
                 role = Role.SURVIVOR.ordinal
             },
-            Ingredient().apply{
+            Ingredient().apply {
                 username = "Marge Sompson"
                 distance = 123.1
                 role = Role.RESCUER.ordinal
             },
-            Ingredient().apply{
+            Ingredient().apply {
                 username = "Abraham Sompson"
                 distance = 123.1
                 role = Role.SURVIVOR.ordinal
             },
-            Ingredient().apply{
+            Ingredient().apply {
                 username = "The Game Sompson"
                 distance = 123.1
                 role = Role.SURVIVOR.ordinal
-            },Ingredient().apply{
+            }, Ingredient().apply {
                 username = "Homero Sompson"
                 distance = 123.1
                 role = Role.SURVIVOR.ordinal
             },
-            Ingredient().apply{
+            Ingredient().apply {
                 username = "Lisa Sompson"
                 distance = 123.1
                 role = Role.RESCUER.ordinal
             },
-            Ingredient().apply{
+            Ingredient().apply {
                 username = "Bort Sompson"
                 distance = 123.1
                 role = Role.SURVIVOR.ordinal
             },
-            Ingredient().apply{
+            Ingredient().apply {
                 username = "Marge Sompson"
                 distance = 123.1
                 role = Role.RESCUER.ordinal
             },
-            Ingredient().apply{
+            Ingredient().apply {
                 username = "Abraham Sompson"
                 distance = 123.1
                 role = Role.SURVIVOR.ordinal
             },
-            Ingredient().apply{
+            Ingredient().apply {
                 username = "The Game Sompson"
                 distance = 123.1
                 role = Role.SURVIVOR.ordinal
             }
         )
-        val survivors = ingredients.filter { x -> x.role == Role.SURVIVOR.ordinal }
-        val rescuers = ingredients.filter { x -> x.role == Role.RESCUER.ordinal }
+        val survivors = childList.filter { x -> x.role == Role.SURVIVOR.ordinal }
+        val rescuers = childList.filter { x -> x.role == Role.RESCUER.ordinal }
+        val collection = hashMapOf(Role.SURVIVOR to survivors, Role.RESCUER to rescuers)
 
-        text_survivors.text = "Sobrevivientes (${survivors.size})"
-        text_rescuers.text = "Sobrevivientes (${rescuers.size})"
+        val expandableListView = findViewById<ExpandableListView>(R.id.expandable_list)
+        val expandableListAdapter: ExpandableListAdapter = IngredientAdapter(this, collection, listOf(Role.SURVIVOR, Role.RESCUER))
+        expandableListView.setAdapter(expandableListAdapter)
 
-        val survivorAdapter = IngredientAdapter(this,
-            R.layout.adapter_dispositivos_encontrados_wifi,
-            survivors
-        )
-
-        val rescuerAdapter = IngredientAdapter(this,
-            R.layout.adapter_dispositivos_encontrados_wifi,
-            rescuers
-        )
-
-        val survivorsList = findViewById<ListView>(R.id.list_survivors)
-        val rescuersList = findViewById<ListView>(R.id.list_rescuers)
-
-        survivorsList.adapter = survivorAdapter
-        rescuersList.adapter = rescuerAdapter
+        expandableListView.setOnChildClickListener { _, _, group, child, _ ->
+            val selected = expandableListAdapter.getChild(group, child)
+            Toast.makeText(this, selected.toString(), Toast.LENGTH_LONG).show()
+            true
+        }
 
         locationUpdates()
 
@@ -420,7 +410,8 @@ class BuscandoDispositivosBluetooth : AppCompatActivity(), OnMapReadyCallback, B
 
         try {
             lm.requestLocationUpdates(
-                LocationManager.GPS_PROVIDER, 100, 0f) { location ->
+                LocationManager.GPS_PROVIDER, 100, 0f
+            ) { location ->
                 //longitude = location.longitude
                 //latitude = location.latitude
                 println("La ubicación ha cambiado chaval")
