@@ -13,6 +13,7 @@ import android.net.wifi.p2p.nsd.WifiP2pDnsSdServiceRequest
 import android.os.Build
 import android.os.Bundle
 import android.util.Log
+import android.view.View
 import android.widget.ExpandableListAdapter
 import android.widget.ExpandableListView
 import android.widget.ImageButton
@@ -66,10 +67,22 @@ class MainContent : AppCompatActivity(), OnMapReadyCallback {
         expandableListView.setAdapter(expandableListAdapter)
 
         expandableListView.setOnChildClickListener { _, _, group, child, _ ->
-            val selected = expandableListAdapter.getChild(group, child)
-            Toast.makeText(this, selected.toString(), Toast.LENGTH_LONG).show()
+            val selectedIngredient = expandableListAdapter.getChild(group, child)
+
+            if(selectedIngredient != null){
+                list.visibility = View.GONE
+                description.visibility = View.VISIBLE
+
+                username.text = "Nombre: ${selectedIngredient.username}"
+                gps_distance.text = "Distancia GPS: ${selectedIngredient.distance}"
+                role.text = if (selectedIngredient.role == Role.SURVIVOR.ordinal) "Rol: Sobreviviente" else ("Rol: Rescatista")
+                updateCamera(selectedIngredient)
+            }
+
             true
         }
+
+        description.visibility = View.GONE
 
         //createLocationRequest()
         init()
@@ -101,6 +114,30 @@ class MainContent : AppCompatActivity(), OnMapReadyCallback {
         googleMap.mapType = GoogleMap.MAP_TYPE_NORMAL
         googleMap.setMaxZoomPreference(100f)
         googleMap.setMinZoomPreference(5f)
+        googleMap.uiSettings.isMapToolbarEnabled = false
+        googleMap.setOnMarkerClickListener { marker ->
+            list.visibility = View.GONE
+            description.visibility = View.VISIBLE
+
+            val theIngredient = ingredients.firstOrNull { x -> x.marker == marker}
+            if(theIngredient != null){
+                username.text = "Nombre: ${theIngredient.username}"
+                gps_distance.text = "Distancia GPS: ${theIngredient.distance}"
+                role.text = if (theIngredient.role == Role.SURVIVOR.ordinal) "Rol: Sobreviviente" else ("Rol: Rescatista")
+                //updateCamera(theIngredient)
+            } else if (marker == myself!!.marker){
+                username.text = "Nombre: ${myself!!.username} (yo)"
+                role.text = if (myself!!.role == Role.SURVIVOR.ordinal) "Rol: Sobreviviente" else ("Rol: Rescatista")
+                //updateCamera(myself!!)
+            }
+            false
+            //TODO KEEP ZOOM ON UPDATECAMERA and delete info window
+        }
+
+        googleMap.setOnInfoWindowCloseListener {
+            list.visibility = View.VISIBLE
+            description.visibility = View.GONE
+        }
 
         /*val file = File(applicationContext.filesDir, "bogota_tiles.mbtiles")
         val tileProvider: TileProvider =

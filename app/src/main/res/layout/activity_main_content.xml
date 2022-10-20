@@ -5,12 +5,15 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context=".activities.MainContent">
+
     <fragment
         android:id="@+id/map"
         android:name="com.google.android.gms.maps.SupportMapFragment"
         class="com.google.android.gms.maps.SupportMapFragment"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
+        android:layout_marginBottom="250dp"
+        app:layout_constraintBottom_toBottomOf="parent"
         tools:context=".MapsActivity" />
 
     <androidx.coordinatorlayout.widget.CoordinatorLayout
@@ -90,7 +93,7 @@
                     android:id="@+id/bt_distance"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Distancia Bluetooth Distancia Bluetooth Distancia Bluetooth"
+                    android:text="Distancia Bluetooth: Distancia Bluetooth Distancia Bluetooth"
                     android:textColor="@color/white"
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintTop_toBottomOf="@id/gps_distance" />
@@ -99,7 +102,7 @@
                     android:id="@+id/height"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="ALTURA ESTIMADA ALTURA ESTIMADA ALTURA ESTIMADA ALTURA ESTIMADA"
+                    android:text="ALTURA ESTIMADA: ALTURA ESTIMADA ALTURA ESTIMADA ALTURA ESTIMADA"
                     android:textColor="@color/white"
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintTop_toBottomOf="@id/bt_distance" />
