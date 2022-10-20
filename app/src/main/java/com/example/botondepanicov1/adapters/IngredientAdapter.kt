@@ -9,12 +9,12 @@ import android.widget.TextView
 import com.example.botondepanicov1.R
 import com.example.botondepanicov1.core.Role
 import com.example.botondepanicov1.wifi_direct.Ingredient
-import org.w3c.dom.Text
+
 
 class IngredientAdapter(
-    val context: Context,
-    val collection: Map<Role, List<Ingredient>>,
-    val groupList: List<Role>
+    private val context: Context,
+    private var collection: Map<Role, List<Ingredient>>,
+    private val groupList: List<Role>
 ) : BaseExpandableListAdapter() {
     override fun getGroupCount(): Int {
         return collection.size
@@ -54,7 +54,7 @@ class IngredientAdapter(
         val textView: TextView = view.findViewById(R.id.text)
         textView.text = if (groupID == Role.SURVIVOR)
             "Sobrevivientes (${childrenCount})"
-        else "Sobrevivientes (${childrenCount})"
+        else "Rescatistas (${childrenCount})"
 
         return view
     }
@@ -79,5 +79,10 @@ class IngredientAdapter(
 
     override fun isChildSelectable(p0: Int, p1: Int): Boolean {
         return true
+    }
+
+    fun setData(collection: Map<Role, List<Ingredient>>) {
+        this.collection = collection
+        notifyDataSetChanged()
     }
 }

@@ -13,10 +13,13 @@ import android.net.wifi.p2p.nsd.WifiP2pDnsSdServiceRequest
 import android.os.Build
 import android.os.Bundle
 import android.util.Log
+import android.widget.ExpandableListAdapter
+import android.widget.ExpandableListView
 import android.widget.ImageButton
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import com.example.botondepanicov1.R
+import com.example.botondepanicov1.adapters.IngredientAdapter
 import com.example.botondepanicov1.core.Role
 import com.example.botondepanicov1.services.AlarmService
 import com.example.botondepanicov1.util.Constants
@@ -29,6 +32,8 @@ import com.google.android.gms.maps.model.*
 import com.google.android.gms.tasks.Task
 import kotlinx.android.synthetic.main.activity_main_content.*
 import java.util.*
+import kotlin.collections.ArrayList
+import kotlin.collections.HashMap
 
 
 class MainContent : AppCompatActivity(), OnMapReadyCallback {
@@ -46,9 +51,25 @@ class MainContent : AppCompatActivity(), OnMapReadyCallback {
     private var myself: Ingredient? = null
     private val ingredients = ArrayList<Ingredient>()
 
+    private var collection = HashMap<Role, List<Ingredient>>()
+    private lateinit var expandableListAdapter : IngredientAdapter
+    private lateinit var expandableListView: ExpandableListView
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main_content)
+
+
+        collection = hashMapOf(Role.SURVIVOR to ingredients, Role.RESCUER to ingredients)
+        expandableListView = findViewById(R.id.expandable_list)
+        expandableListAdapter = IngredientAdapter(this, collection, listOf(Role.SURVIVOR, Role.RESCUER))
+        expandableListView.setAdapter(expandableListAdapter)
+
+        expandableListView.setOnChildClickListener { _, _, group, child, _ ->
+            val selected = expandableListAdapter.getChild(group, child)
+            Toast.makeText(this, selected.toString(), Toast.LENGTH_LONG).show()
+            true
+        }
 
         //createLocationRequest()
         init()
@@ -95,7 +116,6 @@ class MainContent : AppCompatActivity(), OnMapReadyCallback {
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
 
         toggleAlarmIB = findViewById(R.id.toggle_alarm)
-        toggleAlarmIB.setImageResource(R.drawable.alarm_off)
 
         toggleAlarmIB.setOnClickListener {
             if (toggleAlarm) {
@@ -355,9 +375,11 @@ class MainContent : AppCompatActivity(), OnMapReadyCallback {
                 ingredients.add(ingredient)
             }
 
-            val survivorsAmount = ingredients.count { x -> x.role == Role.SURVIVOR.ordinal }
-            survivors.text = "Sobrevivientes:   ${survivorsAmount}"
-            rescuers.text = "Rescatistas:   ${ingredients.size - survivorsAmount}"
+
+            val survivors = ingredients.filter { x -> x.role == Role.SURVIVOR.ordinal }
+            val rescuers = ingredients.filter { x -> x.role == Role.RESCUER.ordinal }
+            collection = hashMapOf(Role.SURVIVOR to survivors, Role.RESCUER to rescuers)
+            expandableListAdapter.setData(collection)
         }
 
         wifiP2pManager.setDnsSdResponseListeners(wifiP2pChannel, null, txtListener)

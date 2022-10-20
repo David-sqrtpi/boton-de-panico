@@ -19,7 +19,7 @@
         <entry key="..\:/Sergio/Documents/Android/Botondepanicov1/app/src/main/res/layout/adapter_dispositivos_encontrados_wifi.xml" value="0.536" />
         <entry key="..\:/Sergio/Documents/Android/Botondepanicov1/app/src/main/res/layout/map_devices_adapter.xml" value="0.24444444444444444" />
         <entry key="..\:/Sergio/Documents/Android/Botondepanicov1/app/src/main/res/layout/popup.xml" value="0.2105978260869565" />
-        <entry key="..\:/Users/David/Desktop/Developers Developers/Android/Botondepanicov1/app/src/main/res/drawable/alarm.xml" value="0.175" />
+        <entry key="..\:/Users/David/Desktop/Developers Developers/Android/Botondepanicov1/app/src/main/res/drawable/alarm.xml" value="0.22" />
         <entry key="..\:/Users/David/Desktop/Developers Developers/Android/Botondepanicov1/app/src/main/res/drawable/alarm_off.xml" value="0.2115" />
         <entry key="..\:/Users/David/Desktop/Developers Developers/Android/Botondepanicov1/app/src/main/res/drawable/borde.xml" value="0.2115" />
         <entry key="..\:/Users/David/Desktop/Developers Developers/Android/Botondepanicov1/app/src/main/res/drawable/bordes_redondos.xml" value="0.2115" />
@@ -30,15 +30,17 @@
         <entry key="..\:/Users/David/Desktop/Developers Developers/Android/Botondepanicov1/app/src/main/res/layout/activity_buscando_dispositivos_bluetooth.xml" value="0.21929824561403508" />
         <entry key="..\:/Users/David/Desktop/Developers Developers/Android/Botondepanicov1/app/src/main/res/layout/activity_buscando_dispositivos_wifi.xml" value="0.22" />
         <entry key="..\:/Users/David/Desktop/Developers Developers/Android/Botondepanicov1/app/src/main/res/layout/activity_login.xml" value="0.1554850407978241" />
-        <entry key="..\:/Users/David/Desktop/Developers Developers/Android/Botondepanicov1/app/src/main/res/layout/activity_main_content.xml" value="0.22" />
+        <entry key="..\:/Users/David/Desktop/Developers Developers/Android/Botondepanicov1/app/src/main/res/layout/activity_main_content.xml" value="0.1" />
         <entry key="..\:/Users/David/Desktop/Developers Developers/Android/Botondepanicov1/app/src/main/res/layout/activity_map.xml" value="0.18554938007695596" />
         <entry key="..\:/Users/David/Desktop/Developers Developers/Android/Botondepanicov1/app/src/main/res/layout/activity_no_importa.xml" value="0.22" />
         <entry key="..\:/Users/David/Desktop/Developers Developers/Android/Botondepanicov1/app/src/main/res/layout/activity_pantalla_principal.xml" value="0.22" />
         <entry key="..\:/Users/David/Desktop/Developers Developers/Android/Botondepanicov1/app/src/main/res/layout/activity_registro.xml" value="0.20416666666666666" />
+        <entry key="..\:/Users/David/Desktop/Developers Developers/Android/Botondepanicov1/app/src/main/res/layout/activity_user_description.xml" value="0.1774262505344164" />
         <entry key="..\:/Users/David/Desktop/Developers Developers/Android/Botondepanicov1/app/src/main/res/layout/adapter_dispositivos_encontrados_wifi.xml" value="0.5" />
         <entry key="..\:/Users/David/Desktop/Developers Developers/Android/Botondepanicov1/app/src/main/res/layout/child_item.xml" value="0.5" />
         <entry key="..\:/Users/David/Desktop/Developers Developers/Android/Botondepanicov1/app/src/main/res/layout/group_item.xml" value="0.1774262505344164" />
-        <entry key="..\:/Users/David/Desktop/Developers Developers/Android/Botondepanicov1/app/src/main/res/layout/group_item_resucuer.xml" value="0.1774262505344164" />
+        <entry key="..\:/Users/David/Desktop/Developers Developers/Android/Botondepanicov1/app/src/main/res/layout/group_item_resucuer.xml" value="0.67" />
+        <entry key="..\:/Users/David/Desktop/Developers Developers/Android/Botondepanicov1/app/src/main/res/layout/group_item_survivor.xml" value="0.75" />
         <entry key="..\:/Users/David/Desktop/Developers Developers/Android/Botondepanicov1/app/src/main/res/layout/popup.xml" value="0.20416666666666666" />
       </map>
     </option>
@@ -52,7 +54,7 @@
   <component name="VisualizationToolProject">
     <option name="state">
       <ProjectState>
-        <option name="scale" value="0.67" />
+        <option name="scale" value="0.1" />
       </ProjectState>
     </option>
   </component>
