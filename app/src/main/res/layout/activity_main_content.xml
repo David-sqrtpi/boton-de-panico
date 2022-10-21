@@ -71,59 +71,148 @@
                 android:id="@+id/description"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent">
+
                 <TextView
                     android:id="@+id/username"
-                    android:layout_width="wrap_content"
+                    android:layout_width="0dp"
                     android:layout_height="wrap_content"
-                    android:text="NAME NAME NAME NAME NAME"
+                    android:layout_marginStart="8dp"
+                    android:fontFamily="@font/roboto"
+                    android:text="David Stiven Riscanevo Vanegas"
                     android:textColor="@color/white"
+                    android:textSize="48sp"
+                    app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintTop_toTopOf="parent" />
+
+                <TextView
+                    android:id="@+id/device"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="16dp"
+                    android:fontFamily="@font/roboto"
+                    android:letterSpacing="0.15"
+                    android:text="Samsung Galaxy S20"
+                    android:textColor="@color/white"
+                    android:textSize="16sp"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toBottomOf="@id/username" />
+
+                <TextView
+                    android:id="@+id/distances"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="8dp"
+                    android:layout_marginTop="32dp"
+                    android:fontFamily="@font/roboto"
+                    android:letterSpacing="0.25"
+                    android:text="Distancia"
+                    android:textColor="@color/white"
+                    android:textSize="34sp"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toBottomOf="@id/device" />
 
                 <TextView
                     android:id="@+id/gps_distance"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Distancia GPS Distancia GPS Distancia GPS"
+                    android:layout_marginStart="16dp"
+                    android:fontFamily="@font/roboto"
+                    android:letterSpacing="0.25"
+                    android:text="GPS: 1.234 metros"
                     android:textColor="@color/white"
+                    android:textSize="14sp"
                     app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toBottomOf="@id/username" />
+                    app:layout_constraintTop_toBottomOf="@id/distances" />
+
+                <TextView
+                    android:id="@+id/gps_caption"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="32dp"
+                    android:layout_marginTop="8dp"
+                    android:layout_marginEnd="32dp"
+                    android:fontFamily="@font/roboto"
+                    android:letterSpacing="0.4"
+                    android:text="Actualización: 20/10/2022
+                    12:03 a. m."
+                    android:textColor="@color/white"
+                    android:textSize="12sp"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toBottomOf="@id/gps_distance" />
 
                 <TextView
                     android:id="@+id/bt_distance"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Distancia Bluetooth: Distancia Bluetooth Distancia Bluetooth"
+                    android:layout_marginStart="16dp"
+                    android:layout_marginTop="24dp"
+                    android:fontFamily="@font/roboto"
+                    android:letterSpacing="0.25"
+                    android:text="Absoluta: 5.678 metros"
                     android:textColor="@color/white"
+                    android:textSize="14sp"
                     app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toBottomOf="@id/gps_distance" />
+                    app:layout_constraintTop_toBottomOf="@id/gps_caption" />
 
                 <TextView
                     android:id="@+id/height"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="ALTURA ESTIMADA: ALTURA ESTIMADA ALTURA ESTIMADA ALTURA ESTIMADA"
+                    android:layout_marginStart="16dp"
+                    android:fontFamily="@font/roboto"
+                    android:letterSpacing="0.25"
+                    android:text="Altura: 9.101 metros"
                     android:textColor="@color/white"
+                    android:textSize="14sp"
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintTop_toBottomOf="@id/bt_distance" />
+
+                <TextView
+                    android:id="@+id/bt_caption"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="32dp"
+                    android:layout_marginTop="8dp"
+                    android:layout_marginEnd="32dp"
+                    android:fontFamily="@font/roboto"
+                    android:letterSpacing="0.4"
+                    android:text="Actualización: 21/10/2022
+                    12:02 a. m."
+                    android:textColor="@color/white"
+                    android:textSize="12sp"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toBottomOf="@id/height" />
+
+                <TextView
+                    android:id="@+id/role_tv"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="8dp"
+                    android:layout_marginTop="32dp"
+                    android:fontFamily="@font/roboto"
+                    android:letterSpacing="0.25"
+                    android:text="Rol"
+                    android:textColor="@color/white"
+                    android:textSize="34sp"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toBottomOf="@id/bt_caption" />
 
                 <TextView
                     android:id="@+id/role"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="ROL ROL ROL ROL ROL ROL ROL ROL ROL"
+                    android:layout_marginStart="16dp"
+                    android:fontFamily="@font/roboto"
+                    android:letterSpacing="0.25"
+                    android:text="Sobreviviente"
                     android:textColor="@color/white"
+                    android:textSize="14sp"
                     app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toBottomOf="@id/height" />
-
-                <TextView
-                    android:id="@+id/device"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Dispositivo Dispositivo Dispositivo Dispositivo Dispositivo"
-                    android:textColor="@color/white"
-                    app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toBottomOf="@id/device" />
+                    app:layout_constraintTop_toBottomOf="@id/role_tv" />
             </androidx.constraintlayout.widget.ConstraintLayout>
         </FrameLayout>
 

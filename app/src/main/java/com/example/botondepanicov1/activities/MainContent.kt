@@ -72,10 +72,16 @@ class MainContent : AppCompatActivity(), OnMapReadyCallback {
             if(selectedIngredient != null){
                 list.visibility = View.GONE
                 description.visibility = View.VISIBLE
+                distances.visibility = View.VISIBLE
+                gps_distance.visibility = View.VISIBLE
+                gps_caption.visibility = View.VISIBLE
+                bt_distance.visibility = View.VISIBLE
+                height.visibility = View.VISIBLE
+                bt_caption.visibility = View.VISIBLE
 
-                username.text = "Nombre: ${selectedIngredient.username}"
-                gps_distance.text = "Distancia GPS: ${selectedIngredient.distance}"
-                role.text = if (selectedIngredient.role == Role.SURVIVOR.ordinal) "Rol: Sobreviviente" else ("Rol: Rescatista")
+                username.text = selectedIngredient.username
+                gps_distance.text = selectedIngredient.distance.toString()
+                role.text = if (selectedIngredient.role == Role.SURVIVOR.ordinal) "Sobreviviente" else "Rescatista"
                 updateCamera(selectedIngredient)
             }
 
@@ -121,13 +127,26 @@ class MainContent : AppCompatActivity(), OnMapReadyCallback {
 
             val theIngredient = ingredients.firstOrNull { x -> x.marker == marker}
             if(theIngredient != null){
-                username.text = "Nombre: ${theIngredient.username}"
-                gps_distance.text = "Distancia GPS: ${theIngredient.distance}"
-                role.text = if (theIngredient.role == Role.SURVIVOR.ordinal) "Rol: Sobreviviente" else ("Rol: Rescatista")
+                distances.visibility = View.VISIBLE
+                gps_distance.visibility = View.VISIBLE
+                gps_caption.visibility = View.VISIBLE
+                bt_distance.visibility = View.VISIBLE
+                height.visibility = View.VISIBLE
+                bt_caption.visibility = View.VISIBLE
+
+                username.text = theIngredient.username
+                gps_distance.text = theIngredient.distance.toString()
+                role.text = if (theIngredient.role == Role.SURVIVOR.ordinal) "Sobreviviente" else "Rescatista"
                 //updateCamera(theIngredient)
             } else if (marker == myself!!.marker){
-                username.text = "Nombre: ${myself!!.username} (yo)"
-                role.text = if (myself!!.role == Role.SURVIVOR.ordinal) "Rol: Sobreviviente" else ("Rol: Rescatista")
+                username.text = "${myself!!.username} (yo)"
+                role.text = if (myself!!.role == Role.SURVIVOR.ordinal) "Sobreviviente" else "Rescatista"
+                distances.visibility = View.GONE
+                gps_distance.visibility = View.GONE
+                gps_caption.visibility = View.GONE
+                bt_distance.visibility = View.GONE
+                height.visibility = View.GONE
+                bt_caption.visibility = View.GONE
                 //updateCamera(myself!!)
             }
             false

@@ -3,5 +3,6 @@
     <array name="preloaded_fonts" translatable="false">
         <item>@font/lexend_exa</item>
         <item>@font/lexend_zetta</item>
+        <item>@font/roboto</item>
     </array>
 </resources>
