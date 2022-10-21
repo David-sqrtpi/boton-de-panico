@@ -4,13 +4,12 @@ import android.Manifest
 import android.content.Intent
 import android.content.IntentSender
 import android.os.Bundle
-import android.view.View
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import com.example.botondepanicov1.activities.MainContent
 import com.example.botondepanicov1.util.Constants
-import com.example.botondepanicov1.util.StorageManager
+//import com.example.botondepanicov1.util.StorageManager
 import com.google.android.gms.common.api.ResolvableApiException
 import com.google.android.gms.location.*
 import com.google.android.gms.tasks.Task
@@ -76,7 +75,7 @@ class PantallaPrincipal : AppCompatActivity() {
             startActivity(intent)
             finish()
         } else {
-            StorageManager.storeRawToLocal(this)
+            //StorageManager.storeRawToLocal(this)
             saludo.text = "Hola, $name"
             edit_name.setOnClickListener{
                 startActivity(intent)

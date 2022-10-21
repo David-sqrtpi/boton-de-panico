@@ -118,7 +118,6 @@ class MainContent : AppCompatActivity(), OnMapReadyCallback {
         //TODO iniciar y detener el servicio dependiendo de la bandera. También detener el servicio
         //  Cuando termina la actividad
         toggle_alarm.setOnClickListener {
-            toggleAlarm = !toggleAlarm
             val intent = Intent(this, AlarmService::class.java)
 
             if (toggleAlarm) {
@@ -128,6 +127,7 @@ class MainContent : AppCompatActivity(), OnMapReadyCallback {
                 toggle_alarm.setImageResource(R.drawable.alarm)
                 startService(intent)
             }
+            toggleAlarm = !toggleAlarm
         }
 
         change_role.setOnClickListener {

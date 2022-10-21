@@ -37,22 +37,18 @@ class BuscandoDispositivosBluetooth : AppCompatActivity(), BeaconConsumer {
         bluetoothAdapter = btManager.adapter
 
         //LEER PREFERENCIAS DE LA MAC
-        val datos = getSharedPreferences(
-            Constants.PREFERENCES_KEY,
-            MODE_PRIVATE
-        ).getString(Constants.PREFERENCES_MAC, null)
-        Log.v("Sergio", "MACKEY$datos")
-        // valida que se pueda obtener la MAC, si no es posible genera el numero aleatorio
-        if (datos == null) {
+        mac = getSharedPreferences(Constants.PREFERENCES_KEY, MODE_PRIVATE)
+            .getString(Constants.PREFERENCES_MAC, null)
+
+        Log.v("Sergio", "PREFERENCES_MAC $mac")
+
+        if (mac == null) {
             mac = trasformarMac()
             guardarMacAleatoria(mac)
         }
-        run { mac = datos }
 
         beaconManager = BeaconManager.getInstanceForApplication(this)
-        //llama la funcion para la configuracion del beacon
         setupBeacon()
-        //llama la funcion para envio de los beacons
         envio()
         beaconManager!!.beaconParsers.add(
             BeaconParser()
@@ -63,10 +59,7 @@ class BuscandoDispositivosBluetooth : AppCompatActivity(), BeaconConsumer {
 
     //si no es posible obtener la MAC guarda la aleatoria en preferencias
     private fun guardarMacAleatoria(mac: String?) {
-        val prefs = getSharedPreferences(
-            Constants.PREFERENCES_KEY,
-            MODE_PRIVATE
-        )
+        val prefs = getSharedPreferences(Constants.PREFERENCES_KEY, MODE_PRIVATE)
         val editor = prefs.edit()
         editor.putString(Constants.PREFERENCES_MAC, mac)
         editor.apply()
@@ -91,7 +84,6 @@ class BuscandoDispositivosBluetooth : AppCompatActivity(), BeaconConsumer {
     private val bluetoothOn: Boolean
         get() = bluetoothAdapter != null && bluetoothAdapter!!.isEnabled
 
-    ///llama la funcion que valida si el bluetooth este encendido
     private fun envio() {
         if (bluetoothOn) {
             Log.i(TAG, "isBluetoothOn")
@@ -129,12 +121,10 @@ class BuscandoDispositivosBluetooth : AppCompatActivity(), BeaconConsumer {
                 })
             }
         } else {
-            val toast = Toast.makeText(
-                this,
-                "Su dispositivo no es compatible con LE Bluetooth.",
+            Toast.makeText(
+                this, "Su dispositivo no es compatible con LE Bluetooth.",
                 Toast.LENGTH_LONG
-            )
-            toast.show()
+            ).show()
         }
     }
 
@@ -234,6 +224,7 @@ class BuscandoDispositivosBluetooth : AppCompatActivity(), BeaconConsumer {
         fun trasformarMac(): String {
             var mac = ""
             Log.v("Sergio", "uuid|" + (obtenerMac() == "") + "|")
+
             return if (obtenerMac() == "") {
                 alternativaMac()
             } else {
@@ -251,11 +242,12 @@ class BuscandoDispositivosBluetooth : AppCompatActivity(), BeaconConsumer {
         }
 
         //TODO revisar traducción
-        // optiene la MAC de los dispositivos si es posible
+        // obtiene la MAC de los dispositivos si es posible
         private fun obtenerMac(): String {
             try {
                 val all: List<NetworkInterface> =
                     Collections.list(NetworkInterface.getNetworkInterfaces())
+
                 for (nif in all) {
                     if (!nif.name.equals("wlan0", ignoreCase = true)) continue
                     val macBytes = nif.hardwareAddress ?: return ""
@@ -274,12 +266,10 @@ class BuscandoDispositivosBluetooth : AppCompatActivity(), BeaconConsumer {
             return ""
         }
 
-        // concatena los numeros aleatorios
         private fun alternativaMac(): String {
             return numeroAleatorio() + numeroAleatorio()
         }
 
-        // se genera numero aletario de 6 digitos
         private fun numeroAleatorio(): String {
             val randomNum = Random.nextInt(100000, 999999)
             println("Random Number: $randomNum")
