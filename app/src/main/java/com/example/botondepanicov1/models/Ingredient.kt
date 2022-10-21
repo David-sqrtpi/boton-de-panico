@@ -1,8 +1,6 @@
-package com.example.botondepanicov1.wifi_direct
+package com.example.botondepanicov1.models
 
-import com.example.botondepanicov1.core.Role
 import com.google.android.gms.maps.model.Marker
-import java.util.*
 
 class Ingredient {
     var username: String = "Yo"

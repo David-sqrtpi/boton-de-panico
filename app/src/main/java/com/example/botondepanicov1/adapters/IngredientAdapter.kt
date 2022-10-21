@@ -7,8 +7,8 @@ import android.view.ViewGroup
 import android.widget.BaseExpandableListAdapter
 import android.widget.TextView
 import com.example.botondepanicov1.R
-import com.example.botondepanicov1.core.Role
-import com.example.botondepanicov1.wifi_direct.Ingredient
+import com.example.botondepanicov1.models.Role
+import com.example.botondepanicov1.models.Ingredient
 
 
 class IngredientAdapter(

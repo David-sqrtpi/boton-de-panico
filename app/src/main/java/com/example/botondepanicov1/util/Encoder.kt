@@ -1,4 +1,4 @@
-package com.example.botondepanicov1.wifi_direct
+package com.example.botondepanicov1.util
 
 import java.text.SimpleDateFormat
 import java.util.*

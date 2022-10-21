@@ -1,4 +1,4 @@
-package com.example.botondepanicov1
+package com.example.botondepanicov1.activities
 
 import android.Manifest
 import android.content.Intent
@@ -7,7 +7,8 @@ import android.os.Bundle
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
-import com.example.botondepanicov1.activities.MainContent
+import com.example.botondepanicov1.R
+import com.example.botondepanicov1.ValidacionPermisos
 import com.example.botondepanicov1.util.Constants
 //import com.example.botondepanicov1.util.StorageManager
 import com.google.android.gms.common.api.ResolvableApiException

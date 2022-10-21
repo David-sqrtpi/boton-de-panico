@@ -14,8 +14,6 @@ public class AlarmService extends Service {
     private MediaPlayer player;
     private AudioManager audioManager;
     private int originalVolume;
-    private final int resId = R.raw.alarma_sonora;
-    private final int placeholder = R.raw.placeholder;
 
 
     @Override
@@ -25,7 +23,8 @@ public class AlarmService extends Service {
         audioManager = (AudioManager) getSystemService(AUDIO_SERVICE);
         originalVolume = audioManager.getStreamVolume(AudioManager.STREAM_MUSIC);
 
-        player = MediaPlayer.create(this, placeholder);
+        int resId = R.raw.alarma_sonora;
+        player = MediaPlayer.create(this, resId);
         player.setAudioStreamType(AudioManager.STREAM_MUSIC);
         player.setLooping(true);
 

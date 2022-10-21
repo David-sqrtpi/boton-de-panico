@@ -1,8 +1,7 @@
 package com.example.botondepanicov1.util
 
 import android.net.wifi.p2p.WifiP2pDevice
-import com.example.botondepanicov1.wifi_direct.Encoder
-import com.example.botondepanicov1.wifi_direct.Ingredient
+import com.example.botondepanicov1.models.Ingredient
 import java.util.*
 import kotlin.collections.HashMap
 

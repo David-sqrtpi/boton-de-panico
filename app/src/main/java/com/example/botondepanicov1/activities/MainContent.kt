@@ -15,14 +15,11 @@ import android.view.View
 import androidx.appcompat.app.AppCompatActivity
 import com.example.botondepanicov1.R
 import com.example.botondepanicov1.adapters.IngredientAdapter
-import com.example.botondepanicov1.core.Role
+import com.example.botondepanicov1.models.Role
 import com.example.botondepanicov1.services.AlarmService
 import com.example.botondepanicov1.util.Constants
 import com.example.botondepanicov1.util.IngredientUtils
-import com.example.botondepanicov1.wifi_direct.Ingredient
-import com.google.android.gms.location.FusedLocationProviderClient
-import com.google.android.gms.location.LocationRequest
-import com.google.android.gms.location.LocationServices
+import com.example.botondepanicov1.models.Ingredient
 import com.google.android.gms.maps.*
 import com.google.android.gms.maps.model.*
 import kotlinx.android.synthetic.main.activity_main_content.*

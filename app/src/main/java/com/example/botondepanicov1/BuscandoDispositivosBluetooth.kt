@@ -1,4 +1,4 @@
-package com.example.botondepanicov1.bluetooth
+package com.example.botondepanicov1
 
 import android.bluetooth.BluetoothAdapter
 import android.bluetooth.BluetoothManager
@@ -10,14 +10,11 @@ import android.os.RemoteException
 import android.util.Log
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
-import com.example.botondepanicov1.R
 import com.example.botondepanicov1.models.BluetoothFrame
 import com.example.botondepanicov1.util.Constants
-import com.example.botondepanicov1.wifi_direct.Encoder
+import com.example.botondepanicov1.util.Encoder
 import org.altbeacon.beacon.*
-import java.net.NetworkInterface
 import java.util.*
-import kotlin.experimental.and
 import kotlin.random.Random
 
 class BuscandoDispositivosBluetooth : AppCompatActivity(), BeaconConsumer {

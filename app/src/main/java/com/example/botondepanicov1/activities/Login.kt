@@ -1,4 +1,4 @@
-package com.example.botondepanicov1
+package com.example.botondepanicov1.activities
 
 import android.content.Intent
 import android.content.SharedPreferences
@@ -6,7 +6,8 @@ import android.os.Bundle
 import android.view.View
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
-import com.example.botondepanicov1.bluetooth.BuscandoDispositivosBluetooth
+import com.example.botondepanicov1.R
+import com.example.botondepanicov1.BuscandoDispositivosBluetooth
 import com.example.botondepanicov1.util.Constants
 import kotlinx.android.synthetic.main.activity_login.*
 
