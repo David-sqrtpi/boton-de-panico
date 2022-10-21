@@ -52,11 +52,10 @@
         app:layout_constraintTop_toTopOf="parent">
 
         <ImageButton
-            android:id="@+id/button"
+            android:id="@+id/sos_button"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:background="@drawable/bordes_redondos_sos"
-            android:onClick="onClickSolicitarAyuda"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintHorizontal_bias="0.0"

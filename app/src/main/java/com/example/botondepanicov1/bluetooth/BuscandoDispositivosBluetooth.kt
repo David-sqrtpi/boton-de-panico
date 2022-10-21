@@ -1,74 +1,55 @@
 package com.example.botondepanicov1.bluetooth
 
-import android.Manifest
-import android.annotation.SuppressLint
 import android.bluetooth.BluetoothAdapter
 import android.bluetooth.BluetoothManager
 import android.bluetooth.le.AdvertiseCallback
 import android.bluetooth.le.AdvertiseSettings
 import android.content.pm.PackageManager
-import android.location.LocationManager
-import android.os.Build
 import android.os.Bundle
 import android.os.RemoteException
-import android.preference.PreferenceManager
 import android.util.Log
-import android.widget.ExpandableListAdapter
-import android.widget.ExpandableListView
-import android.widget.ListView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.app.ActivityCompat
 import com.example.botondepanicov1.R
-import com.example.botondepanicov1.adapters.IngredientAdapter
-import com.example.botondepanicov1.core.Role
 import com.example.botondepanicov1.models.BluetoothFrame
-import com.example.botondepanicov1.wifi_direct.Ingredient
-import com.google.android.gms.maps.GoogleMap
-import com.google.android.gms.maps.OnMapReadyCallback
+import com.example.botondepanicov1.util.Constants
+import com.example.botondepanicov1.wifi_direct.Encoder
 import org.altbeacon.beacon.*
 import java.net.NetworkInterface
-import java.text.SimpleDateFormat
 import java.util.*
 import kotlin.experimental.and
+import kotlin.random.Random
 
-class BuscandoDispositivosBluetooth : AppCompatActivity(), OnMapReadyCallback, BeaconConsumer {
+class BuscandoDispositivosBluetooth : AppCompatActivity(), BeaconConsumer {
     // variables para la configuracion de los beacons
     private var beacon: Beacon? = null
-    private var btAdapter: BluetoothAdapter? = null
+    private var bluetoothAdapter: BluetoothAdapter? = null
     private var beaconManager: BeaconManager? = null
     private var beaconTransmitter: BeaconTransmitter? = null
-    private var listaBluetooth: ListView? = null
-    private var mLista: MutableList<BluetoothFrame> = ArrayList()
-    private var mAdapter: AdapterBluetooth? = null
-    private lateinit var googleMap: GoogleMap
+    private var bluetoothList: MutableList<BluetoothFrame> = ArrayList()
+    private var mac: String? = null
 
-    //Direccion MAC
-    var mac: String? = null
-    var KEY_MAC = "MAC"
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_buscando_dispositivos_bluetooth)
 
-        locationUpdates()
+        val btManager = this.getSystemService(BLUETOOTH_SERVICE) as BluetoothManager
+        bluetoothAdapter = btManager.adapter
 
         //LEER PREFERENCIAS DE LA MAC
-        val pref = PreferenceManager.getDefaultSharedPreferences(this)
-        val datos = pref.getString(KEY_MAC, "No hay datos")
+        val datos = getSharedPreferences(
+            Constants.PREFERENCES_KEY,
+            MODE_PRIVATE
+        ).getString(Constants.PREFERENCES_MAC, null)
         Log.v("Sergio", "MACKEY$datos")
-        // valida que se pueda optener la MAC, si no es posible genera el numero aleatorio
-        if (datos == "No hay datos") {
+        // valida que se pueda obtener la MAC, si no es posible genera el numero aleatorio
+        if (datos == null) {
             mac = trasformarMac()
             guardarMacAleatoria(mac)
         }
         run { mac = datos }
 
-        //llama a funcion de validar permisos de localozacion
-        checkPermission()
-        //TODO listaBluetooth = findViewById(R.id.listBluetooth)
-        btAdapter = BluetoothAdapter.getDefaultAdapter()
         beaconManager = BeaconManager.getInstanceForApplication(this)
-        encenderBluetooth()
         //llama la funcion para la configuracion del beacon
         setupBeacon()
         //llama la funcion para envio de los beacons
@@ -81,10 +62,13 @@ class BuscandoDispositivosBluetooth : AppCompatActivity(), OnMapReadyCallback, B
     }
 
     //si no es posible obtener la MAC guarda la aleatoria en preferencias
-    fun guardarMacAleatoria(mac: String?) {
-        val prefs = PreferenceManager.getDefaultSharedPreferences(this)
+    private fun guardarMacAleatoria(mac: String?) {
+        val prefs = getSharedPreferences(
+            Constants.PREFERENCES_KEY,
+            MODE_PRIVATE
+        )
         val editor = prefs.edit()
-        editor.putString(KEY_MAC, mac)
+        editor.putString(Constants.PREFERENCES_MAC, mac)
         editor.apply()
     }
 
@@ -94,13 +78,6 @@ class BuscandoDispositivosBluetooth : AppCompatActivity(), OnMapReadyCallback, B
         finish()
     }
 
-    //encender o apagar bluetooth
-    private fun encenderBluetooth() {
-        if (!btAdapter!!.isEnabled) {
-            btAdapter!!.enable()
-        }
-    }
-
     // inica el descubrimiento de dispositivos
     private fun inicioDescubrimiento() {
         beaconManager!!.bind(this@BuscandoDispositivosBluetooth)
@@ -108,39 +85,34 @@ class BuscandoDispositivosBluetooth : AppCompatActivity(), OnMapReadyCallback, B
 
     //valida que el bluetooth habilitado y compatible con el dispositivo
     private val isBluetoothLEAvailable: Boolean
-        private get() = btAdapter != null && this.packageManager.hasSystemFeature(PackageManager.FEATURE_BLUETOOTH_LE)
+        get() = bluetoothAdapter != null && this.packageManager.hasSystemFeature(PackageManager.FEATURE_BLUETOOTH_LE)
 
     //valida que el bluetooth este encendido
-    private val blueToothOn: Boolean
-        private get() = btAdapter != null && btAdapter!!.isEnabled
+    private val bluetoothOn: Boolean
+        get() = bluetoothAdapter != null && bluetoothAdapter!!.isEnabled
 
     ///llama la funcion que valida si el bluetooth este encendido
     private fun envio() {
-        if (blueToothOn) {
-            Log.i(TAG, "isBlueToothOn")
+        if (bluetoothOn) {
+            Log.i(TAG, "isBluetoothOn")
             transmitIBeacon()
         } else if (!isBluetoothLEAvailable) {
-            val toast = Toast.makeText(
-                this,
-                "Bluetooth no disponible en su dispositivo.",
+            Toast.makeText(
+                this, "Bluetooth no disponible en su dispositivo.",
                 Toast.LENGTH_LONG
-            )
-            toast.show()
+            ).show()
         } else {
             Log.i(TAG, "BlueTooth is off")
-            val toast = Toast.makeText(
-                this,
-                "Habilite bluetooth antes de transmitir iBeacon.",
+            Toast.makeText(
+                this, "Habilite bluetooth antes de transmitir iBeacon.",
                 Toast.LENGTH_LONG
-            )
-            toast.show()
+            ).show()
         }
     }
 
     // envio de beacons
     private fun transmitIBeacon() {
-        val isSupported: Boolean
-        isSupported = btAdapter!!.isMultipleAdvertisementSupported
+        val isSupported: Boolean = bluetoothAdapter!!.isMultipleAdvertisementSupported
         if (isSupported) {
             Log.v(TAG, "is support advertistment")
             if (beaconTransmitter!!.isStarted) {
@@ -169,7 +141,7 @@ class BuscandoDispositivosBluetooth : AppCompatActivity(), OnMapReadyCallback, B
     //configuracion del beacon concatenando la MAC
     private fun setupBeacon() {
         val uuid = "954e6dac-5612-4642-b2d1-$mac"
-        Log.v("Sergio", "uuid $uuid")
+        Log.v("Sergio", "uuid: $uuid")
         beacon = Beacon.Builder()
             .setId1(uuid) // UUID for beacon
             .setId2("5") // Major for beacon
@@ -177,14 +149,12 @@ class BuscandoDispositivosBluetooth : AppCompatActivity(), OnMapReadyCallback, B
             .setManufacturer(0x004C) // Radius Networks.0x0118  Change this for other beacon layouts//0x004C for iPhone
             .setTxPower(-56) // Power in dB
             .setDataFields(
-                Arrays.asList(
+                listOf(
                     2L,
                     3L
                 )
             ) // Remove this for beacon layouts without d: fields
             .build()
-        val btManager = this.getSystemService(BLUETOOTH_SERVICE) as BluetoothManager
-        btAdapter = btManager.adapter
         beaconTransmitter = BeaconTransmitter(
             this, BeaconParser()
                 .setBeaconLayout("m:2-3=beac,i:4-19,i:20-21,i:22-23,p:24-24,d:25-25")
@@ -221,20 +191,14 @@ class BuscandoDispositivosBluetooth : AppCompatActivity(), OnMapReadyCallback, B
         })
 
         //se obtienen los datos recibidos de los beacons
-        beaconManager!!.setRangeNotifier { beacons: Collection<Beacon>, region1: Region? ->
+        beaconManager!!.setRangeNotifier { beacons: Collection<Beacon>, _: Region? ->
             for (oneBeacon in beacons) {
                 Log.d(
                     TAG, "distance: " + oneBeacon.distance + " adrres:" + oneBeacon.bluetoothAddress
                             + " id:" + oneBeacon.id1 + "/" + oneBeacon.id2 + "/" + oneBeacon.id3
                 )
 
-                mLista = eliminarDuplicados(mLista, oneBeacon)
-                mAdapter = AdapterBluetooth(
-                    this@BuscandoDispositivosBluetooth,
-                    R.layout.adapter_dispositivos_encontrados_wifi,
-                    mLista
-                )
-                listaBluetooth!!.adapter = mAdapter
+                bluetoothList = eliminarDuplicados(bluetoothList, oneBeacon)
             }
         }
         try {
@@ -246,18 +210,12 @@ class BuscandoDispositivosBluetooth : AppCompatActivity(), OnMapReadyCallback, B
     }
 
     // elimina el duplicados de dispositivos encontrados
-    fun eliminarDuplicados(
+    private fun eliminarDuplicados(
         lista: MutableList<BluetoothFrame>,
         oneBeacon: Beacon
     ): MutableList<BluetoothFrame> {
-        val c = Calendar.getInstance()
-        @SuppressLint("SimpleDateFormat") val sdf = SimpleDateFormat("yyyy-MM-dd HH:mm:ss")
-        val strDate = sdf.format(c.time)
-        for (i in mLista.indices) {
-            if (mLista[i].identifier == oneBeacon.id1) {
-                mLista.removeAt(i)
-            }
-        }
+        val strDate = Encoder.dateToString(Date())
+        bluetoothList.removeAll { x -> x.identifier == oneBeacon.id1 }
 
         val frame = BluetoothFrame().apply {
             identifier = oneBeacon.id1
@@ -265,64 +223,8 @@ class BuscandoDispositivosBluetooth : AppCompatActivity(), OnMapReadyCallback, B
             date = strDate
         }
 
-        mLista.add(frame)
+        bluetoothList.add(frame)
         return lista
-    }
-
-    // valida los permisos de localizacion
-    fun checkPermission() {
-        if (Build.VERSION.SDK_INT >= 23) {
-            if (checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED && checkSelfPermission(
-                    Manifest.permission.ACCESS_COARSE_LOCATION
-                ) == PackageManager.PERMISSION_GRANTED
-            ) {
-            } else {
-                ActivityCompat.requestPermissions(
-                    this, arrayOf(
-                        Manifest.permission.ACCESS_FINE_LOCATION,
-                        Manifest.permission.ACCESS_COARSE_LOCATION
-                    ), 1
-                )
-            }
-        }
-    }
-
-    override fun onRequestPermissionsResult(
-        requestCode: Int,
-        permissions: Array<String>,
-        grantResults: IntArray
-    ) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
-        if (requestCode == 1 && grantResults[0] == PackageManager.PERMISSION_GRANTED && grantResults[1] == PackageManager.PERMISSION_GRANTED) {
-        } else {
-            checkPermission()
-        }
-    }
-
-    @SuppressLint("MissingPermission")
-    private fun locationUpdates() {
-        val lm = getSystemService(LOCATION_SERVICE) as LocationManager
-
-        try {
-            lm.requestLocationUpdates(
-                LocationManager.GPS_PROVIDER, 100, 0f
-            ) { location ->
-                //longitude = location.longitude
-                //latitude = location.latitude
-                println("La ubicación ha cambiado chaval")
-                //println("longitude: $longitude")
-                //println("latitude: $latitude")
-            }
-        } catch (e: Exception) {
-            Log.v("Sergio", e.toString())
-        }
-    }
-
-    override fun onMapReady(googleMap: GoogleMap) {
-        this.googleMap = googleMap
-        googleMap.mapType = GoogleMap.MAP_TYPE_NORMAL
-        googleMap.setMaxZoomPreference(100f)
-        googleMap.setMinZoomPreference(5f)
     }
 
     companion object {
@@ -342,7 +244,7 @@ class BuscandoDispositivosBluetooth : AppCompatActivity(), OnMapReadyCallback, B
                     }
                 }
                 for (i in macArray) {
-                    mac = mac + i
+                    mac += i
                 }
                 mac
             }
@@ -350,7 +252,7 @@ class BuscandoDispositivosBluetooth : AppCompatActivity(), OnMapReadyCallback, B
 
         //TODO revisar traducción
         // optiene la MAC de los dispositivos si es posible
-        fun obtenerMac(): String {
+        private fun obtenerMac(): String {
             try {
                 val all: List<NetworkInterface> =
                     Collections.list(NetworkInterface.getNetworkInterfaces())
@@ -361,7 +263,7 @@ class BuscandoDispositivosBluetooth : AppCompatActivity(), OnMapReadyCallback, B
                     for (b in macBytes) {
                         res1.append(Integer.toHexString((b and 0xFF.toByte()).toInt()) + ":")
                     }
-                    if (res1.length > 0) {
+                    if (res1.isNotEmpty()) {
                         res1.deleteCharAt(res1.length - 1)
                     }
                     return res1.toString()
@@ -373,17 +275,15 @@ class BuscandoDispositivosBluetooth : AppCompatActivity(), OnMapReadyCallback, B
         }
 
         // concatena los numeros aleatorios
-        fun alternativaMac(): String {
+        private fun alternativaMac(): String {
             return numeroAleatorio() + numeroAleatorio()
         }
 
         // se genera numero aletario de 6 digitos
-        fun numeroAleatorio(): String {
-            val min_val: Long = 100000
-            val max_val = 999999
-            val randomNum = Math.random() * (max_val - min_val)
+        private fun numeroAleatorio(): String {
+            val randomNum = Random.nextInt(100000, 999999)
             println("Random Number: $randomNum")
-            return randomNum.toInt().toString()
+            return randomNum.toString()
         }
     }
 }

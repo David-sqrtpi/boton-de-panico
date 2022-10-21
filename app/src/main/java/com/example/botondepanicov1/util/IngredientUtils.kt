@@ -19,7 +19,7 @@ class IngredientUtils {
             message["a"] = ingredient.deviceAddress
             message["o"] = ingredient.longitude.toString()
             message["a"] = ingredient.latitude.toString()
-            message["d"] = Encoder.dateToString(Date())!!
+            message["d"] = Encoder.dateToString(Date())
             message["r"] = ingredient.role.toString()
 
             return message
@@ -32,6 +32,7 @@ class IngredientUtils {
         ): Ingredient {
             val ingredient = Ingredient().apply {
                 username = message["u"]!!
+                deviceName = message["n"]!!
                 longitude = java.lang.Double.valueOf(message["o"]!!)
                 latitude = java.lang.Double.valueOf(message["a"]!!)
                 date = message["d"]!!
