@@ -43,7 +43,7 @@ class BuscandoDispositivosBluetooth : AppCompatActivity(), BeaconConsumer {
         Log.v("Sergio", "PREFERENCES_MAC $mac")
 
         if (mac == null) {
-            mac = trasformarMac()
+            mac = alternativaMac()
             guardarMacAleatoria(mac)
         }
 
@@ -184,7 +184,7 @@ class BuscandoDispositivosBluetooth : AppCompatActivity(), BeaconConsumer {
         beaconManager!!.setRangeNotifier { beacons: Collection<Beacon>, _: Region? ->
             for (oneBeacon in beacons) {
                 Log.d(
-                    TAG, "distance: " + oneBeacon.distance + " adrres:" + oneBeacon.bluetoothAddress
+                    TAG, "distance: " + oneBeacon.distance + " address:" + oneBeacon.bluetoothAddress
                             + " id:" + oneBeacon.id1 + "/" + oneBeacon.id2 + "/" + oneBeacon.id3
                 )
 
@@ -219,52 +219,6 @@ class BuscandoDispositivosBluetooth : AppCompatActivity(), BeaconConsumer {
 
     companion object {
         private const val TAG = "Sergio"
-
-        //transforma la MAC para que quede Hexadecimal
-        fun trasformarMac(): String {
-            var mac = ""
-            Log.v("Sergio", "uuid|" + (obtenerMac() == "") + "|")
-
-            return if (obtenerMac() == "") {
-                alternativaMac()
-            } else {
-                val macArray = obtenerMac().split(":").toTypedArray()
-                for (i in macArray.indices) {
-                    if (macArray[i].length == 1) {
-                        macArray[i] = macArray[i] + "0"
-                    }
-                }
-                for (i in macArray) {
-                    mac += i
-                }
-                mac
-            }
-        }
-
-        //TODO revisar traducción
-        // obtiene la MAC de los dispositivos si es posible
-        private fun obtenerMac(): String {
-            try {
-                val all: List<NetworkInterface> =
-                    Collections.list(NetworkInterface.getNetworkInterfaces())
-
-                for (nif in all) {
-                    if (!nif.name.equals("wlan0", ignoreCase = true)) continue
-                    val macBytes = nif.hardwareAddress ?: return ""
-                    val res1 = StringBuilder()
-                    for (b in macBytes) {
-                        res1.append(Integer.toHexString((b and 0xFF.toByte()).toInt()) + ":")
-                    }
-                    if (res1.isNotEmpty()) {
-                        res1.deleteCharAt(res1.length - 1)
-                    }
-                    return res1.toString()
-                }
-            } catch (ex: Exception) {
-                Log.e("Error", ex.message!!)
-            }
-            return ""
-        }
 
         private fun alternativaMac(): String {
             return numeroAleatorio() + numeroAleatorio()

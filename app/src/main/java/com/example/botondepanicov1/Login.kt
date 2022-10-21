@@ -8,7 +8,6 @@ import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import com.example.botondepanicov1.bluetooth.BuscandoDispositivosBluetooth
 import com.example.botondepanicov1.util.Constants
-import com.example.botondepanicov1.wifi_direct.BuscandoDispositivosWifi
 import kotlinx.android.synthetic.main.activity_login.*
 
 class Login : AppCompatActivity() {
@@ -18,15 +17,6 @@ class Login : AppCompatActivity() {
         setContentView(R.layout.activity_login)
 
         continuar.setOnClickListener(onContinuarClickListener)
-
-        button2.setOnClickListener {
-            startActivity(
-                Intent(
-                    this,
-                    BuscandoDispositivosWifi::class.java
-                )
-            )
-        }
 
         button3.setOnClickListener{
             startActivity(
