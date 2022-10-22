@@ -181,7 +181,8 @@ class BuscandoDispositivosBluetooth : AppCompatActivity(), BeaconConsumer {
         beaconManager!!.setRangeNotifier { beacons: Collection<Beacon>, _: Region? ->
             for (oneBeacon in beacons) {
                 Log.d(
-                    TAG, "distance: " + oneBeacon.distance + " address:" + oneBeacon.bluetoothAddress
+                    TAG,
+                    "distance: " + oneBeacon.distance + " address:" + oneBeacon.bluetoothAddress
                             + " id:" + oneBeacon.id1 + "/" + oneBeacon.id2 + "/" + oneBeacon.id3
                 )
 

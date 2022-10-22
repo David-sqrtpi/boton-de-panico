@@ -6,8 +6,8 @@ import android.os.Bundle
 import android.view.View
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
-import com.example.botondepanicov1.R
 import com.example.botondepanicov1.BuscandoDispositivosBluetooth
+import com.example.botondepanicov1.R
 import com.example.botondepanicov1.util.Constants
 import kotlinx.android.synthetic.main.activity_login.*
 
@@ -19,7 +19,7 @@ class Login : AppCompatActivity() {
 
         continuar.setOnClickListener(onContinuarClickListener)
 
-        button3.setOnClickListener{
+        button3.setOnClickListener {
             startActivity(
                 Intent(
                     this,

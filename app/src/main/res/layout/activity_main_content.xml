@@ -48,6 +48,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:visible="false">
+
                 <ExpandableListView
                     android:id="@+id/expandable_list"
                     android:layout_width="match_parent"
@@ -179,8 +180,8 @@
                     android:layout_marginEnd="32dp"
                     android:fontFamily="@font/roboto"
                     android:letterSpacing="0.4"
-                    android:text="Actualización: 21/10/2022
-                    12:02 a. m."
+                    android:text="Actualización: 22 de octubre
+                    03:44:10 a. m."
                     android:textColor="@color/white"
                     android:textSize="12sp"
                     app:layout_constraintEnd_toEndOf="parent"

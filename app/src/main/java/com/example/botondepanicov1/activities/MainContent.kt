@@ -15,11 +15,11 @@ import android.view.View
 import androidx.appcompat.app.AppCompatActivity
 import com.example.botondepanicov1.R
 import com.example.botondepanicov1.adapters.IngredientAdapter
+import com.example.botondepanicov1.models.Ingredient
 import com.example.botondepanicov1.models.Role
 import com.example.botondepanicov1.services.AlarmService
 import com.example.botondepanicov1.util.Constants
 import com.example.botondepanicov1.util.IngredientUtils
-import com.example.botondepanicov1.models.Ingredient
 import com.google.android.gms.maps.*
 import com.google.android.gms.maps.model.*
 import kotlinx.android.synthetic.main.activity_main_content.*
@@ -69,6 +69,7 @@ class MainContent : AppCompatActivity(), OnMapReadyCallback {
 
         googleMap.setOnMarkerClickListener { marker ->
             val selectedIngredient = ingredients.firstOrNull { x -> x.marker == marker }
+
             if (selectedIngredient != null) showDescription(selectedIngredient)
             else showDescription(myself)
 
@@ -80,16 +81,9 @@ class MainContent : AppCompatActivity(), OnMapReadyCallback {
             list.visibility = View.VISIBLE
             description.visibility = View.GONE
         }
-
-        /*val file = File(applicationContext.filesDir, "bogota_tiles.mbtiles")
-        val tileProvider: TileProvider =
-            MapBoxOfflineTileProvider(file)
-        googleMap
-            .addTileOverlay(TileOverlayOptions().tileProvider(tileProvider))*/
     }
 
     private fun init() {
-        //TODO hacer solo una vez username & device name
         myself.username = getSharedPreferences(
             Constants.PREFERENCES_KEY,
             MODE_PRIVATE
@@ -112,8 +106,7 @@ class MainContent : AppCompatActivity(), OnMapReadyCallback {
         wifiP2pManager = getSystemService(WIFI_P2P_SERVICE) as WifiP2pManager
         wifiP2pChannel = wifiP2pManager.initialize(applicationContext, mainLooper, null)
 
-        //TODO iniciar y detener el servicio dependiendo de la bandera. También detener el servicio
-        //  Cuando termina la actividad
+        //TODO Detener el servicio cuando termina la actividad
         toggle_alarm.setOnClickListener {
             val intent = Intent(this, AlarmService::class.java)
 
@@ -186,7 +179,6 @@ class MainContent : AppCompatActivity(), OnMapReadyCallback {
         )
     }
 
-    //TODO Cada vez que recibo una actualización de GPS, debo actualizar todos los ingredients que hayan
     private fun onReceivedLocation() {
         val txtListener = WifiP2pManager.DnsSdTxtRecordListener { _, record, device ->
             Log.d(
@@ -237,7 +229,7 @@ class MainContent : AppCompatActivity(), OnMapReadyCallback {
                 myself.latitude = location.latitude
                 myself.longitude = location.longitude
 
-                if(myself.marker == null){
+                if (myself.marker == null) {
                     myself.marker = createMarker(myself)
                     updateCamera(myself)
                 } else {
@@ -254,7 +246,7 @@ class MainContent : AppCompatActivity(), OnMapReadyCallback {
 
     //TODO verificar parámetros
     private fun createMarker(ingredient: Ingredient): Marker? {
-        if (myself != null && ingredient == myself) {
+        if (ingredient == myself) {
             return googleMap.addMarker(
                 MarkerOptions()
                     .position(LatLng(ingredient.latitude, ingredient.longitude))
@@ -274,7 +266,6 @@ class MainContent : AppCompatActivity(), OnMapReadyCallback {
         )
     }
 
-    //TODO verificar si es necesario retornar el marker
     //TODO verificar parámetros
     private fun updateMarker(ingredient: Ingredient): Marker? {
         ingredient.marker?.position = LatLng(ingredient.latitude, ingredient.longitude)

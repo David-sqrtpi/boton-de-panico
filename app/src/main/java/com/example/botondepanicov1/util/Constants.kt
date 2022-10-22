@@ -10,6 +10,5 @@ class Constants {
         const val REQUEST_CHECK_SETTINGS = 1
 
         const val TAG_WIFI = "TAG_WIFI"
-        const val MYSELF_ADDRESS = "IM.MY.OWN.DEVICE"
     }
 }

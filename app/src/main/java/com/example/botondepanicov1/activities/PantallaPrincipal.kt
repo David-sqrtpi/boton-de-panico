@@ -8,9 +8,8 @@ import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import com.example.botondepanicov1.R
-import com.example.botondepanicov1.ValidacionPermisos
 import com.example.botondepanicov1.util.Constants
-//import com.example.botondepanicov1.util.StorageManager
+import com.example.botondepanicov1.util.PermissionsCheck
 import com.google.android.gms.common.api.ResolvableApiException
 import com.google.android.gms.location.*
 import com.google.android.gms.tasks.Task
@@ -27,7 +26,7 @@ class PantallaPrincipal : AppCompatActivity() {
             startActivity(intent)
         }
 
-        if (!ValidacionPermisos.isLocationPermissionGranted(this)) {
+        if (!PermissionsCheck.isLocationPermissionGranted(this)) {
             requestLocationPermission()
         } else {
             whenLocationPermissionGranted()
@@ -72,13 +71,15 @@ class PantallaPrincipal : AppCompatActivity() {
         val name = sharedPreference.getString(Constants.PREFERENCES_USERNAME, null)
         val intent = Intent(this, Login::class.java)
 
-        if(name == null){
+        if (name == null) {
             startActivity(intent)
             finish()
         } else {
-            //StorageManager.storeRawToLocal(this)
-            saludo.text = "Hola, $name"
-            edit_name.setOnClickListener{
+            saludo.text = "¡Hola $name!"
+            edit_name.setOnClickListener {
+                startActivity(intent)
+            }
+            saludo.setOnClickListener {
                 startActivity(intent)
             }
         }

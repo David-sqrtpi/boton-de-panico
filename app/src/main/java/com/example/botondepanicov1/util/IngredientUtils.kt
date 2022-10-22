@@ -3,13 +3,12 @@ package com.example.botondepanicov1.util
 import android.net.wifi.p2p.WifiP2pDevice
 import com.example.botondepanicov1.models.Ingredient
 import java.util.*
-import kotlin.collections.HashMap
 
 class IngredientUtils {
     companion object {
-        fun ingredientToHashMap(ingredient: Ingredient?): HashMap<String, String>? {
+        fun ingredientToHashMap(ingredient: Ingredient?): HashMap<String, String> {
             val message = HashMap<String, String>()
-            if(ingredient == null) {
+            if (ingredient == null) {
                 return message
             }
 

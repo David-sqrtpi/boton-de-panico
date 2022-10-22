@@ -45,7 +45,7 @@ public class AlarmService extends Service {
     public void onDestroy() {
         super.onDestroy();
 
-        if(player.isPlaying()){
+        if (player.isPlaying()) {
             player.stop();
         }
 

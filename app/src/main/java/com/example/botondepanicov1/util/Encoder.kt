@@ -6,7 +6,7 @@ import java.util.*
 class Encoder {
     companion object {
         fun dateToString(date: Date): String {
-            val formatter =  SimpleDateFormat("d 'de' MMMM\nh:m:s a")
+            val formatter = SimpleDateFormat("d 'de' MMMM\nhh:mm:ss a")
             return formatter.format(date)
         }
     }

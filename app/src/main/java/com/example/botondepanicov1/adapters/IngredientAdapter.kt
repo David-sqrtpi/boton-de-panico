@@ -7,8 +7,8 @@ import android.view.ViewGroup
 import android.widget.BaseExpandableListAdapter
 import android.widget.TextView
 import com.example.botondepanicov1.R
-import com.example.botondepanicov1.models.Role
 import com.example.botondepanicov1.models.Ingredient
+import com.example.botondepanicov1.models.Role
 
 
 class IngredientAdapter(
@@ -71,7 +71,7 @@ class IngredientAdapter(
             name.text = ingredient.username
         }
         if (ingredient != null) {
-            distance.text = ingredient.distance.toString()
+            distance.text = "Distancia (GPS): ${ingredient.distance} metros"
         }
 
         return view
