@@ -104,7 +104,6 @@ class BuscandoDispositivosBluetooth : AppCompatActivity(), RangeNotifier, Monito
 
     //initialize beacon and beaconTransmitter
     private fun setupBeacon() {
-        //TODO verificar si tiene que ver con setDataFields y layout
         Log.v(Constants.TAG_BT, "UUID: $uuid")
         beacon = Beacon.Builder()
             .setId1(uuid) // UUID for beacon
