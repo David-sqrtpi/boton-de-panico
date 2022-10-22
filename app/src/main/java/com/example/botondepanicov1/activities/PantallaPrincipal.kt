@@ -78,9 +78,11 @@ class PantallaPrincipal : AppCompatActivity() {
             saludo.text = "¡Hola $name!"
             edit_name.setOnClickListener {
                 startActivity(intent)
+                finish()
             }
             saludo.setOnClickListener {
                 startActivity(intent)
+                finish()
             }
         }
     }

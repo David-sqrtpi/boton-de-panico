@@ -6,7 +6,6 @@ import android.bluetooth.le.AdvertiseCallback
 import android.bluetooth.le.AdvertiseSettings
 import android.content.pm.PackageManager
 import android.os.Bundle
-import android.os.RemoteException
 import android.util.Log
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
@@ -17,14 +16,15 @@ import org.altbeacon.beacon.*
 import java.util.*
 import kotlin.random.Random
 
-class BuscandoDispositivosBluetooth : AppCompatActivity(), BeaconConsumer {
-    // variables para la configuracion de los beacons
-    private var beacon: Beacon? = null
-    private var bluetoothAdapter: BluetoothAdapter? = null
-    private var beaconManager: BeaconManager? = null
-    private var beaconTransmitter: BeaconTransmitter? = null
+class BuscandoDispositivosBluetooth : AppCompatActivity(), RangeNotifier, MonitorNotifier {
+    private lateinit var beacon: Beacon
+    private lateinit var bluetoothAdapter: BluetoothAdapter
+    private lateinit var beaconManager: BeaconManager
+    private lateinit var beaconTransmitter: BeaconTransmitter
     private var bluetoothList: MutableList<BluetoothFrame> = ArrayList()
     private var mac: String? = null
+    private var beaconParser = BeaconParser()
+        .setBeaconLayout("m:2-3=beac,i:4-19,i:20-21,i:22-23,p:24-24,d:25-25")
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -33,57 +33,38 @@ class BuscandoDispositivosBluetooth : AppCompatActivity(), BeaconConsumer {
         val btManager = this.getSystemService(BLUETOOTH_SERVICE) as BluetoothManager
         bluetoothAdapter = btManager.adapter
 
-        //LEER PREFERENCIAS DE LA MAC
         mac = getSharedPreferences(Constants.PREFERENCES_KEY, MODE_PRIVATE)
             .getString(Constants.PREFERENCES_MAC, null)
 
-        Log.v("Sergio", "PREFERENCES_MAC $mac")
+        Log.v(TAG, "PREFERENCES_MAC $mac")
 
         if (mac == null) {
-            mac = alternativaMac()
-            guardarMacAleatoria(mac)
+            mac = lastUUIDPart()
+            saveLastUUIDPart(mac)
         }
 
         beaconManager = BeaconManager.getInstanceForApplication(this)
         setupBeacon()
-        envio()
-        beaconManager!!.beaconParsers.add(
-            BeaconParser()
-                .setBeaconLayout("m:2-3=beac,i:4-19,i:20-21,i:22-23,p:24-24,d:25-25")
-        )
-        inicioDescubrimiento()
+        checkBTToTransmit()
+        beaconManager.beaconParsers.add(beaconParser)
+        onBeaconServiceConnect()
     }
 
     //si no es posible obtener la MAC guarda la aleatoria en preferencias
-    private fun guardarMacAleatoria(mac: String?) {
+    private fun saveLastUUIDPart(mac: String?) {
         val prefs = getSharedPreferences(Constants.PREFERENCES_KEY, MODE_PRIVATE)
         val editor = prefs.edit()
         editor.putString(Constants.PREFERENCES_MAC, mac)
         editor.apply()
     }
 
-    //termina la actividad cuando se hace uso de boton atras
-    override fun onBackPressed() {
-        beaconManager!!.unbind(this@BuscandoDispositivosBluetooth)
-        finish()
-    }
-
-    // inica el descubrimiento de dispositivos
-    private fun inicioDescubrimiento() {
-        beaconManager!!.bind(this@BuscandoDispositivosBluetooth)
-    }
-
     //valida que el bluetooth habilitado y compatible con el dispositivo
     private val isBluetoothLEAvailable: Boolean
-        get() = bluetoothAdapter != null && this.packageManager.hasSystemFeature(PackageManager.FEATURE_BLUETOOTH_LE)
+        get() = this.packageManager.hasSystemFeature(PackageManager.FEATURE_BLUETOOTH_LE)
 
-    //valida que el bluetooth este encendido
-    private val bluetoothOn: Boolean
-        get() = bluetoothAdapter != null && bluetoothAdapter!!.isEnabled
-
-    private fun envio() {
-        if (bluetoothOn) {
-            Log.i(TAG, "isBluetoothOn")
+    private fun checkBTToTransmit() {
+        if (bluetoothAdapter.isEnabled) {
+            Log.i(TAG, "Bluetooth is enabled")
             transmitIBeacon()
         } else if (!isBluetoothLEAvailable) {
             Toast.makeText(
@@ -91,7 +72,7 @@ class BuscandoDispositivosBluetooth : AppCompatActivity(), BeaconConsumer {
                 Toast.LENGTH_LONG
             ).show()
         } else {
-            Log.i(TAG, "BlueTooth is off")
+            Log.i(TAG, "Bluetooth is off")
             Toast.makeText(
                 this, "Habilite bluetooth antes de transmitir iBeacon.",
                 Toast.LENGTH_LONG
@@ -101,19 +82,18 @@ class BuscandoDispositivosBluetooth : AppCompatActivity(), BeaconConsumer {
 
     // envio de beacons
     private fun transmitIBeacon() {
-        val isSupported: Boolean = bluetoothAdapter!!.isMultipleAdvertisementSupported
-        if (isSupported) {
-            Log.v(TAG, "is support advertistment")
-            if (beaconTransmitter!!.isStarted) {
-                beaconTransmitter!!.stopAdvertising()
+        if (bluetoothAdapter.isMultipleAdvertisementSupported) {
+            Log.v(TAG, "Multiple advertisement supported")
+            if (beaconTransmitter.isStarted) {
+                beaconTransmitter.stopAdvertising()
             } else {
-                beaconTransmitter!!.startAdvertising(beacon, object : AdvertiseCallback() {
+                beaconTransmitter.startAdvertising(beacon, object : AdvertiseCallback() {
                     override fun onStartFailure(errorCode: Int) {
                         Log.e(TAG, "Advertisement start failed with code: $errorCode")
                     }
 
                     override fun onStartSuccess(settingsInEffect: AdvertiseSettings) {
-                        Log.i(TAG, "Advertisement start succeeded.$settingsInEffect")
+                        Log.i(TAG, "Advertisement start succeeded. $settingsInEffect")
                     }
                 })
             }
@@ -125,10 +105,11 @@ class BuscandoDispositivosBluetooth : AppCompatActivity(), BeaconConsumer {
         }
     }
 
-    //configuracion del beacon concatenando la MAC
+    //initialize beacon and beaconTransmitter
     private fun setupBeacon() {
+        //TODO verificar si tiene que ver con setDataFields y layout
         val uuid = "954e6dac-5612-4642-b2d1-$mac"
-        Log.v("Sergio", "uuid: $uuid")
+        Log.v(TAG, "uuid: $uuid")
         beacon = Beacon.Builder()
             .setId1(uuid) // UUID for beacon
             .setId2("5") // Major for beacon
@@ -142,63 +123,23 @@ class BuscandoDispositivosBluetooth : AppCompatActivity(), BeaconConsumer {
                 )
             ) // Remove this for beacon layouts without d: fields
             .build()
-        beaconTransmitter = BeaconTransmitter(
-            this, BeaconParser()
-                .setBeaconLayout("m:2-3=beac,i:4-19,i:20-21,i:22-23,p:24-24,d:25-25")
-        )
+
+        beaconTransmitter = BeaconTransmitter(this, beaconParser)
     }
 
     //recepcion de beacons
-    override fun onBeaconServiceConnect() {
+    private fun onBeaconServiceConnect() {
         val region =
-            Region("myBeaons", Identifier.parse("2f234454-cf6d-4a0f-adf2-f4911ba9ffa6"), null, null)
-        val region2 = Region("myBeaons", null, null, null)
-        beaconManager!!.setMonitorNotifier(object : MonitorNotifier {
-            override fun didEnterRegion(region: Region) {
-                try {
-                    Log.d(TAG, "didEnterRegion")
-                    beaconManager!!.startRangingBeaconsInRegion(region)
-                    beaconManager!!.startRangingBeaconsInRegion(region2)
-                } catch (e: RemoteException) {
-                    e.printStackTrace()
-                }
-            }
+            Region("panic-button-region", null, null, null)
 
-            override fun didExitRegion(region: Region) {
-                try {
-                    Log.d(TAG, "didExitRegion")
-                    beaconManager!!.stopRangingBeaconsInRegion(region)
-                    beaconManager!!.stopRangingBeaconsInRegion(region2)
-                } catch (e: RemoteException) {
-                    e.printStackTrace()
-                }
-            }
-
-            override fun didDetermineStateForRegion(i: Int, region: Region) {}
-        })
-
-        //se obtienen los datos recibidos de los beacons
-        beaconManager!!.setRangeNotifier { beacons: Collection<Beacon>, _: Region? ->
-            for (oneBeacon in beacons) {
-                Log.d(
-                    TAG,
-                    "distance: " + oneBeacon.distance + " address:" + oneBeacon.bluetoothAddress
-                            + " id:" + oneBeacon.id1 + "/" + oneBeacon.id2 + "/" + oneBeacon.id3
-                )
-
-                bluetoothList = eliminarDuplicados(bluetoothList, oneBeacon)
-            }
-        }
-        try {
-            beaconManager!!.startMonitoringBeaconsInRegion(region)
-            beaconManager!!.startMonitoringBeaconsInRegion(region2)
-        } catch (e: RemoteException) {
-            e.printStackTrace()
-        }
+        beaconManager.addMonitorNotifier(this)
+        beaconManager.addRangeNotifier(this)
+        beaconManager.startMonitoring(region)
+        beaconManager.startRangingBeacons(region)
     }
 
-    // elimina el duplicados de dispositivos encontrados
-    private fun eliminarDuplicados(
+    //TODO verificar para integrar con ingredient en wifi
+    private fun deleteDuplicated(
         lista: MutableList<BluetoothFrame>,
         oneBeacon: Beacon
     ): MutableList<BluetoothFrame> {
@@ -218,14 +159,38 @@ class BuscandoDispositivosBluetooth : AppCompatActivity(), BeaconConsumer {
     companion object {
         private const val TAG = "Sergio"
 
-        private fun alternativaMac(): String {
-            return numeroAleatorio() + numeroAleatorio()
+        private fun lastUUIDPart(): String {
+            return "${randNumber()}${randNumber()}"
         }
 
-        private fun numeroAleatorio(): String {
-            val randomNum = Random.nextInt(100000, 999999)
-            println("Random Number: $randomNum")
-            return randomNum.toString()
+        private fun randNumber(): Int {
+            return Random.nextInt(100000, 999999)
         }
+    }
+
+    override fun didRangeBeaconsInRegion(beacons: MutableCollection<Beacon>?, region: Region?) {
+        if (beacons != null) {
+            for (oneBeacon in beacons) {
+                Log.d(
+                    TAG,
+                    "distance: " + oneBeacon.distance + " address:" + oneBeacon.bluetoothAddress
+                            + " id:" + oneBeacon.id1 + "/" + oneBeacon.id2 + "/" + oneBeacon.id3
+                )
+
+                bluetoothList = deleteDuplicated(bluetoothList, oneBeacon)
+            }
+        }
+    }
+
+    override fun didEnterRegion(region: Region?) {
+        Log.d(TAG, "didEnterRegion")
+    }
+
+    override fun didExitRegion(region: Region?) {
+        Log.d(TAG, "didExitRegion")
+    }
+
+    override fun didDetermineStateForRegion(state: Int, region: Region?) {
+        Log.d(TAG, "didDetermineStateForRegion")
     }
 }
