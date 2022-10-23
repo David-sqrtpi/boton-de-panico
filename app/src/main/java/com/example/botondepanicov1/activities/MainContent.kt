@@ -20,16 +20,15 @@ import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import com.example.botondepanicov1.R
 import com.example.botondepanicov1.adapters.IngredientAdapter
-import com.example.botondepanicov1.models.BluetoothFrame
 import com.example.botondepanicov1.models.Ingredient
 import com.example.botondepanicov1.models.Role
 import com.example.botondepanicov1.models.WiFiFrame
 import com.example.botondepanicov1.services.AlarmService
 import com.example.botondepanicov1.util.Constants
+import com.example.botondepanicov1.util.Constants.Companion.TAG_BT
 import com.example.botondepanicov1.util.Constants.Companion.TAG_LOCATION
 import com.example.botondepanicov1.util.Constants.Companion.TAG_MAPS
 import com.example.botondepanicov1.util.Constants.Companion.TAG_WIFI
-import com.example.botondepanicov1.util.Encoder
 import com.example.botondepanicov1.util.GPSUtils
 import com.example.botondepanicov1.util.WiFiFrameUtils
 import com.google.android.gms.maps.*
@@ -46,7 +45,7 @@ class MainContent : AppCompatActivity(), OnMapReadyCallback, RangeNotifier, Moni
     private lateinit var expandableListAdapter: IngredientAdapter
     private val ingredients = ArrayList<Ingredient>()
     private var myself: Ingredient = Ingredient()
-
+    private var selectedIngredient: Ingredient? = null
     //WiFi Direct variables
     private lateinit var wifiManager: WifiManager
     private lateinit var wifiP2pChannel: WifiP2pManager.Channel
@@ -57,7 +56,6 @@ class MainContent : AppCompatActivity(), OnMapReadyCallback, RangeNotifier, Moni
     private lateinit var bluetoothAdapter: BluetoothAdapter
     private lateinit var beaconManager: BeaconManager
     private lateinit var beaconTransmitter: BeaconTransmitter
-    private var bluetoothList: MutableList<BluetoothFrame> = java.util.ArrayList()
     private var beaconParser = BeaconParser()
         .setBeaconLayout("m:2-3=beac,i:4-19,i:20-21,i:22-23,p:24-24,d:25-25")
 
@@ -66,14 +64,14 @@ class MainContent : AppCompatActivity(), OnMapReadyCallback, RangeNotifier, Moni
         setContentView(R.layout.activity_main_content)
 
         if (!packageManager.hasSystemFeature(PackageManager.FEATURE_BLUETOOTH_LE)) {
-            Log.i(Constants.TAG_BT, "BLE is not supported")
+            Log.i(TAG_BT, "BLE is not supported")
             // TODO enviar paquete con ble no disponible
         } else {
             val btManager = this.getSystemService(BLUETOOTH_SERVICE) as BluetoothManager
             bluetoothAdapter = btManager.adapter
 
             if (!bluetoothAdapter.isMultipleAdvertisementSupported)
-                Log.i(Constants.TAG_BT, "Multiple advertisement is not supported")
+                Log.i(TAG_BT, "Multiple advertisement is not supported")
             // TODO enviar paquete con ble no disponible
 
             if (bluetoothAdapter.isEnabled) {
@@ -83,7 +81,7 @@ class MainContent : AppCompatActivity(), OnMapReadyCallback, RangeNotifier, Moni
                 beaconManager.beaconParsers.add(beaconParser)
                 onBeaconServiceConnect()
             } else {
-                Log.i(Constants.TAG_BT, "Bluetooth is off")
+                Log.i(TAG_BT, "Bluetooth is off")
                 Toast.makeText(
                     this, "Habilite bluetooth antes de transmitir iBeacon.",
                     Toast.LENGTH_LONG
@@ -116,11 +114,8 @@ class MainContent : AppCompatActivity(), OnMapReadyCallback, RangeNotifier, Moni
         googleMap.uiSettings.isMapToolbarEnabled = false
 
         googleMap.setOnMarkerClickListener { marker ->
-            val selectedIngredient = ingredients.firstOrNull { x -> x.marker == marker }
-
-            if (selectedIngredient != null) showDescription(selectedIngredient)
-            else showDescription(myself)
-
+            selectedIngredient = ingredients.firstOrNull { x -> x.marker == marker }?: myself
+            showDescription()
             false
             //TODO KEEP ZOOM ON UPDATECAMERA and delete info window
         }
@@ -142,8 +137,8 @@ class MainContent : AppCompatActivity(), OnMapReadyCallback, RangeNotifier, Moni
         showList()
 
         expandable_list.setOnChildClickListener { _, _, group, child, _ ->
-            val selectedIngredient = expandableListAdapter.getChild(group, child)
-            if (selectedIngredient != null) showDescription(selectedIngredient)
+            selectedIngredient = expandableListAdapter.getChild(group, child)
+            showDescription()
             true
         }
 
@@ -247,10 +242,14 @@ class MainContent : AppCompatActivity(), OnMapReadyCallback, RangeNotifier, Moni
                 })
             }
 
-            val survivors = ingredients.filter { x -> x.wiFiFrame.role == Role.SURVIVOR.ordinal }
-            val rescuers = ingredients.filter { x -> x.wiFiFrame.role == Role.RESCUER.ordinal }
-            collection = hashMapOf(Role.SURVIVOR to survivors, Role.RESCUER to rescuers)
-            expandableListAdapter.setData(collection)
+            if(list.visibility == View.VISIBLE){
+                val survivors = ingredients.filter { x -> x.wiFiFrame.role == Role.SURVIVOR.ordinal }
+                val rescuers = ingredients.filter { x -> x.wiFiFrame.role == Role.RESCUER.ordinal }
+                collection = hashMapOf(Role.SURVIVOR to survivors, Role.RESCUER to rescuers)
+                expandableListAdapter.setData(collection)
+            } else if (description.visibility == View.VISIBLE){
+                updateDescription(selectedIngredient)
+            }
         }
 
         wifiP2pManager.setDnsSdResponseListeners(wifiP2pChannel, null, txtListener)
@@ -369,22 +368,28 @@ class MainContent : AppCompatActivity(), OnMapReadyCallback, RangeNotifier, Moni
         description.visibility = View.GONE
     }
 
-    private fun showDescription(ingredient: Ingredient) {
+    private fun showDescription() {
         list.visibility = View.GONE
         description.visibility = View.VISIBLE
+    }
 
-        device.text = ingredient.wiFiFrame.deviceName
-        role.text =
-            if (ingredient.wiFiFrame.role == Role.SURVIVOR.ordinal) "Sobreviviente" else "Rescatista"
+    private fun updateDescription(ingredient: Ingredient?) {
+        if (ingredient != null){
+            device.text = ingredient.wiFiFrame.deviceName
+            role.text =
+                if (ingredient.wiFiFrame.role == Role.SURVIVOR.ordinal) "Sobreviviente" else "Rescatista"
 
-        if (ingredient == myself) {
-            descriptionVisibility(View.GONE)
-            username.text = "${ingredient.wiFiFrame.username} (yo)"
-        } else {
-            descriptionVisibility(View.VISIBLE)
-            username.text = ingredient.wiFiFrame.username
-            gps_distance.text = "GPS: ${ingredient.gpsDistance} metros"
-            gps_caption.text = "Actualización: ${ingredient.wiFiFrame.date}"
+            if (ingredient == myself) {
+                descriptionVisibility(View.GONE)
+                username.text = "${ingredient.wiFiFrame.username} (yo)"
+            } else {
+                descriptionVisibility(View.VISIBLE)
+                username.text = ingredient.wiFiFrame.username
+                gps_distance.text = "GPS: ${ingredient.gpsDistance} metros"
+                gps_caption.text = "Actualización: ${ingredient.wiFiFrame.date}"
+                bt_distance.text = "Absoluta: ${ingredient.bluetoothFrame.distance}"
+                bt_caption.text = "Actualización: ${ingredient.btUpdateDate}"
+            }
         }
     }
 
@@ -404,11 +409,11 @@ class MainContent : AppCompatActivity(), OnMapReadyCallback, RangeNotifier, Moni
         } else {
             beaconTransmitter.startAdvertising(beacon, object : AdvertiseCallback() {
                 override fun onStartFailure(errorCode: Int) {
-                    Log.e(Constants.TAG_BT, "Advertisement start failed with code: $errorCode")
+                    Log.e(TAG_BT, "Advertisement start failed with code: $errorCode")
                 }
 
                 override fun onStartSuccess(settingsInEffect: AdvertiseSettings) {
-                    Log.i(Constants.TAG_BT, "Advertisement start succeeded. $settingsInEffect")
+                    Log.i(TAG_BT, "Advertisement start succeeded. $settingsInEffect")
                 }
             })
         }
@@ -419,7 +424,7 @@ class MainContent : AppCompatActivity(), OnMapReadyCallback, RangeNotifier, Moni
         val uuid = getSharedPreferences(Constants.PREFERENCES_KEY, MODE_PRIVATE)
             .getString(Constants.PREFERENCES_UUID, "TODO").toString()
 
-        Log.v(Constants.TAG_BT, "UUID: $uuid")
+        Log.v(TAG_BT, "UUID: $uuid")
         beacon = Beacon.Builder()
             .setId1(uuid) // UUID for beacon
             .setId2("5") // Major for beacon
@@ -446,34 +451,25 @@ class MainContent : AppCompatActivity(), OnMapReadyCallback, RangeNotifier, Moni
         beaconManager.startRangingBeacons(region)
     }
 
-    //TODO verificar para integrar con ingredient en wifi
-    private fun deleteDuplicated(
-        list: MutableList<BluetoothFrame>,
-        oneBeacon: Beacon
-    ): MutableList<BluetoothFrame> {
-        val strDate = Encoder.dateToString(Date())
-        bluetoothList.removeAll { x -> x.identifier == oneBeacon.id1 }
-
-        val frame = BluetoothFrame().apply {
-            identifier = oneBeacon.id1
-            distance = oneBeacon.distance
-            //date = strDate
-        }
-
-        bluetoothList.add(frame)
-        return list
-    }
-
     override fun didRangeBeaconsInRegion(beacons: MutableCollection<Beacon>?, region: Region?) {
         if (beacons != null) {
+            Log.d(TAG_BT, "BEACONS")
             for (oneBeacon in beacons) {
-                Log.d(
-                    Constants.TAG_BT,
-                    "distance: " + oneBeacon.distance + " address:" + oneBeacon.bluetoothAddress
-                            + " id:" + oneBeacon.id1 + "/" + oneBeacon.id2 + "/" + oneBeacon.id3
-                )
+                Log.d(TAG_BT, oneBeacon.toString())
 
-                bluetoothList = deleteDuplicated(bluetoothList, oneBeacon)
+                val theIngredient = ingredients.firstOrNull { x ->
+                    x.wiFiFrame.uuid == oneBeacon.id1.toString()
+                }
+
+                if (theIngredient != null) {
+                    theIngredient.bluetoothFrame.distance = oneBeacon.distance
+                    theIngredient.bluetoothFrame.identifier = oneBeacon.id1
+                    theIngredient.btUpdateDate = Date()
+
+                    if (description.visibility == View.VISIBLE){
+                        updateDescription(selectedIngredient)
+                    }
+                }
             }
         }
     }
