@@ -43,7 +43,6 @@
             android:resource="@array/preloaded_fonts" />
 
         <activity android:name=".activities.MainContent" />
-        <activity android:name=".BuscandoDispositivosBluetooth" />
         <activity
             android:name=".activities.PantallaPrincipal"
             android:exported="true">

@@ -1,17 +1,14 @@
 package com.example.botondepanicov1.models
 
 import com.google.android.gms.maps.model.Marker
+import java.util.*
 
 class Ingredient {
-    var username: String = "Yo"
-    var deviceName: String = "Dispositivo"
-    var deviceAddress: String = ""
-    var longitude: Double = 0.0
-    var latitude: Double = 0.0
-    var distance: Double = 0.0
-        get() = String.format("%.3f", field).toDouble()
+    var wiFiFrame: WiFiFrame = WiFiFrame()
+    var bluetoothFrame: BluetoothFrame = BluetoothFrame()
 
-    var date: String = ""
+    var btUpdateDate: Date? = null
     var marker: Marker? = null
-    var role: Int = Role.SURVIVOR.ordinal
+    var gpsDistance: Double = 0.0
+        get() = String.format("%.3f", field).toDouble()
 }

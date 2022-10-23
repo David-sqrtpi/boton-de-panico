@@ -68,10 +68,10 @@ class IngredientAdapter(
         val distance = view.findViewById<TextView>(R.id.distance)
 
         if (ingredient != null) {
-            name.text = ingredient.username
+            name.text = ingredient.wiFiFrame.username
         }
         if (ingredient != null) {
-            distance.text = "Distancia (GPS): ${ingredient.distance} metros"
+            distance.text = "Distancia (GPS): ${ingredient.gpsDistance} metros"
         }
 
         return view

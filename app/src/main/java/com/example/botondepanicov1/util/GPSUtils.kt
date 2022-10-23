@@ -1,9 +1,19 @@
 package com.example.botondepanicov1.util
 
 import android.location.Location
+import com.example.botondepanicov1.models.WiFiFrame
 
 class GPSUtils {
     companion object {
+        fun calculateDistance(wiFiFrame0: WiFiFrame, wiFiFrame1: WiFiFrame): Double {
+            return calculateDistance(
+                wiFiFrame0.latitude,
+                wiFiFrame0.longitude,
+                wiFiFrame1.latitude,
+                wiFiFrame1.longitude
+            )
+        }
+
         fun calculateDistance(
             latitude0: Double,
             longitude0: Double,
@@ -19,18 +29,6 @@ class GPSUtils {
             location1.longitude = longitude1
 
             return location0.distanceTo(location1).toDouble()
-        }
-
-        fun calculateDistance(location0: Location, location1: Location): Double {
-            return location0.distanceTo(location1).toDouble()
-        }
-
-        fun calculateDistance(location: Location, latitude: Double, longitude: Double): Double {
-            val location1 = Location("")
-            location1.latitude = latitude
-            location1.longitude = longitude
-
-            return location.distanceTo(location1).toDouble()
         }
     }
 }

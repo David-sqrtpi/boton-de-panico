@@ -9,7 +9,9 @@ class Constants {
 
         const val REQUEST_CHECK_SETTINGS = 1
 
-        const val TAG_WIFI = "TAG_WIFI"
-        const val TAG_BT = "TAG_BT"
+        const val TAG_WIFI = "BDP_WIFI"
+        const val TAG_BT = "BDP_BLUETOOTH"
+        const val TAG_MAPS = "BDP_MAPS"
+        const val TAG_LOCATION = "BDP_LOCATION"
     }
 }
