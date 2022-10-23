@@ -1,28 +1,3 @@
 <resources>
     <string name="app_name">Botón De Pánico</string>
-    <string name="title_name">BOTÓN DE PÁNICO</string>
-    <string-array name="tipos_documento">
-        <item>Seleccione</item>
-        <item>CC</item>
-        <item>TI</item>
-        <item>CE</item>
-    </string-array>
-    <string-array name="genero">
-        <item>Seleccione</item>
-        <item>MASCULINO</item>
-        <item>FEMENINO</item>
-        <item>PREFIERO NO DECIR</item>
-    </string-array>
-    <string-array name="rh">
-        <item>Seleccione</item>
-        <item>O</item>
-        <item>A</item>
-        <item>B</item>
-        <item>AB</item>
-    </string-array>
-    <string-array name="signo">
-        <item></item>
-        <item>+</item>
-        <item>-</item>
-    </string-array>
 </resources>

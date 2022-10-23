@@ -20,7 +20,4 @@
         <item name="colorOnError">@color/black</item>
     </style>
 
-    <style name="AppTheme.EditTextError" parent="Widget.MaterialComponents.TextInputLayout.FilledBox">
-        <item name="errorTextColor">@color/red</item>
-    </style>
 </resources>
