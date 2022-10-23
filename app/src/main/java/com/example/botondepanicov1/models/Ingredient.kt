@@ -11,4 +11,6 @@ class Ingredient {
     var marker: Marker? = null
     var gpsDistance: Double = 0.0
         get() = String.format("%.3f", field).toDouble()
+    var height: Double = 0.0
+        get() = String.format("%.3f", field).toDouble()
 }

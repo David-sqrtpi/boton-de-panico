@@ -8,6 +8,8 @@ import android.bluetooth.le.AdvertiseSettings
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.content.res.Resources
+import android.location.Location
+import android.location.LocationListener
 import android.location.LocationManager
 import android.net.wifi.WifiManager
 import android.net.wifi.p2p.WifiP2pManager
@@ -38,7 +40,8 @@ import org.altbeacon.beacon.*
 import java.util.*
 
 //TODO update description when received location or changed location
-class MainContent : AppCompatActivity(), OnMapReadyCallback, RangeNotifier, MonitorNotifier {
+class MainContent : AppCompatActivity(), OnMapReadyCallback, RangeNotifier, MonitorNotifier,
+    LocationListener {
     private var toggleAlarm = false //TODO averiguar si se puede simplificar
     private lateinit var googleMap: GoogleMap
     private var collection = HashMap<Role, List<Ingredient>>()
@@ -46,6 +49,7 @@ class MainContent : AppCompatActivity(), OnMapReadyCallback, RangeNotifier, Moni
     private val ingredients = ArrayList<Ingredient>()
     private var myself: Ingredient = Ingredient()
     private var selectedIngredient: Ingredient? = null
+
     //WiFi Direct variables
     private lateinit var wifiManager: WifiManager
     private lateinit var wifiP2pChannel: WifiP2pManager.Channel
@@ -93,7 +97,28 @@ class MainContent : AppCompatActivity(), OnMapReadyCallback, RangeNotifier, Moni
         addLocalService()
         addServiceRequest()
         onReceivedLocation()
-        locationUpdates()
+    }
+
+    @SuppressLint("MissingPermission")
+    override fun onResume() {
+        super.onResume()
+
+        val lm = getSystemService(LOCATION_SERVICE) as LocationManager
+        try {
+            lm.requestLocationUpdates(
+                LocationManager.GPS_PROVIDER, 5000, 0f, this
+            )
+        } catch (e: Exception) {
+            Log.e(TAG_LOCATION, e.toString())
+        }
+    }
+
+    @SuppressLint("MissingPermission")
+    override fun onPause() {
+        super.onPause()
+
+        val lm = getSystemService(LOCATION_SERVICE) as LocationManager
+        lm.removeUpdates(this)
     }
 
     override fun onMapReady(googleMap: GoogleMap) {
@@ -114,7 +139,7 @@ class MainContent : AppCompatActivity(), OnMapReadyCallback, RangeNotifier, Moni
         googleMap.uiSettings.isMapToolbarEnabled = false
 
         googleMap.setOnMarkerClickListener { marker ->
-            selectedIngredient = ingredients.firstOrNull { x -> x.marker == marker }?: myself
+            selectedIngredient = ingredients.firstOrNull { x -> x.marker == marker } ?: myself
             showDescription()
             false
             //TODO KEEP ZOOM ON UPDATECAMERA and delete info window
@@ -242,48 +267,18 @@ class MainContent : AppCompatActivity(), OnMapReadyCallback, RangeNotifier, Moni
                 })
             }
 
-            if(list.visibility == View.VISIBLE){
-                val survivors = ingredients.filter { x -> x.wiFiFrame.role == Role.SURVIVOR.ordinal }
+            if (list.visibility == View.VISIBLE) {
+                val survivors =
+                    ingredients.filter { x -> x.wiFiFrame.role == Role.SURVIVOR.ordinal }
                 val rescuers = ingredients.filter { x -> x.wiFiFrame.role == Role.RESCUER.ordinal }
                 collection = hashMapOf(Role.SURVIVOR to survivors, Role.RESCUER to rescuers)
                 expandableListAdapter.setData(collection)
-            } else if (description.visibility == View.VISIBLE){
+            } else if (description.visibility == View.VISIBLE) {
                 updateDescription(selectedIngredient)
             }
         }
 
         wifiP2pManager.setDnsSdResponseListeners(wifiP2pChannel, null, txtListener)
-    }
-
-    @SuppressLint("MissingPermission")
-    private fun locationUpdates() {
-        val lm = getSystemService(LOCATION_SERVICE) as LocationManager
-
-        try {
-            lm.requestLocationUpdates(
-                LocationManager.GPS_PROVIDER, 5000, 0f
-            ) { location ->
-                Log.d(
-                    TAG_LOCATION,
-                    "Latitude: ${location.latitude},longitude: ${location.longitude}"
-                )
-
-                myself.wiFiFrame.latitude = location.latitude
-                myself.wiFiFrame.longitude = location.longitude
-
-                if (myself.marker == null) {
-                    myself.marker = createMarker(myself.wiFiFrame)
-                    updateCamera(myself)
-                } else {
-                    myself.marker = updateMarker(myself)
-                }
-
-                broadcastUpdate()
-                discoverUpdates()
-            }
-        } catch (e: Exception) {
-            Log.e(TAG_LOCATION, e.toString())
-        }
     }
 
     //TODO verificar cuando es el marcador propio y sobreviviente/rescatista
@@ -373,8 +368,9 @@ class MainContent : AppCompatActivity(), OnMapReadyCallback, RangeNotifier, Moni
         description.visibility = View.VISIBLE
     }
 
+    //TODO derivated values like gpsdistance and height could be removed from Ingredient
     private fun updateDescription(ingredient: Ingredient?) {
-        if (ingredient != null){
+        if (ingredient != null) {
             device.text = ingredient.wiFiFrame.deviceName
             role.text =
                 if (ingredient.wiFiFrame.role == Role.SURVIVOR.ordinal) "Sobreviviente" else "Rescatista"
@@ -387,7 +383,8 @@ class MainContent : AppCompatActivity(), OnMapReadyCallback, RangeNotifier, Moni
                 username.text = ingredient.wiFiFrame.username
                 gps_distance.text = "GPS: ${ingredient.gpsDistance} metros"
                 gps_caption.text = "Actualización: ${ingredient.wiFiFrame.date}"
-                bt_distance.text = "Absoluta: ${ingredient.bluetoothFrame.distance}"
+                bt_distance.text = "Absoluta: ${ingredient.bluetoothFrame.distance} metros"
+                height.text = "Altura: ${ingredient.height} metros"
                 bt_caption.text = "Actualización: ${ingredient.btUpdateDate}"
             }
         }
@@ -466,7 +463,7 @@ class MainContent : AppCompatActivity(), OnMapReadyCallback, RangeNotifier, Moni
                     theIngredient.bluetoothFrame.identifier = oneBeacon.id1
                     theIngredient.btUpdateDate = Date()
 
-                    if (description.visibility == View.VISIBLE){
+                    if (description.visibility == View.VISIBLE) {
                         updateDescription(selectedIngredient)
                     }
                 }
@@ -479,4 +476,24 @@ class MainContent : AppCompatActivity(), OnMapReadyCallback, RangeNotifier, Moni
     override fun didExitRegion(region: Region?) {}
 
     override fun didDetermineStateForRegion(state: Int, region: Region?) {}
+
+    override fun onLocationChanged(location: Location) {
+        Log.d(
+            TAG_LOCATION,
+            "Latitude: ${location.latitude},longitude: ${location.longitude}"
+        )
+
+        myself.wiFiFrame.latitude = location.latitude
+        myself.wiFiFrame.longitude = location.longitude
+
+        if (myself.marker == null) {
+            myself.marker = createMarker(myself.wiFiFrame)
+            updateCamera(myself)
+        } else {
+            myself.marker = updateMarker(myself)
+        }
+
+        broadcastUpdate()
+        discoverUpdates()
+    }
 }
