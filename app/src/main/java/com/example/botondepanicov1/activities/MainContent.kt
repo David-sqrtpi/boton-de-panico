@@ -8,6 +8,8 @@ import android.bluetooth.le.AdvertiseSettings
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.content.res.Resources
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
 import android.location.Location
 import android.location.LocationListener
 import android.location.LocationManager
@@ -24,7 +26,6 @@ import com.example.botondepanicov1.R
 import com.example.botondepanicov1.adapters.IngredientAdapter
 import com.example.botondepanicov1.models.Ingredient
 import com.example.botondepanicov1.models.Role
-import com.example.botondepanicov1.models.WiFiFrame
 import com.example.botondepanicov1.services.AlarmService
 import com.example.botondepanicov1.util.Constants
 import com.example.botondepanicov1.util.Constants.Companion.TAG_BT
@@ -141,8 +142,8 @@ class MainContent : AppCompatActivity(), OnMapReadyCallback, RangeNotifier, Moni
         googleMap.setOnMarkerClickListener { marker ->
             selectedIngredient = ingredients.firstOrNull { x -> x.marker == marker } ?: myself
             showDescription()
+            updateDescription(selectedIngredient)
             false
-            //TODO KEEP ZOOM ON UPDATECAMERA and delete info window
         }
 
         //TODO create button to go back in sheet and do this
@@ -164,6 +165,7 @@ class MainContent : AppCompatActivity(), OnMapReadyCallback, RangeNotifier, Moni
         expandable_list.setOnChildClickListener { _, _, group, child, _ ->
             selectedIngredient = expandableListAdapter.getChild(group, child)
             showDescription()
+            updateDescription(selectedIngredient)
             true
         }
 
@@ -183,6 +185,10 @@ class MainContent : AppCompatActivity(), OnMapReadyCallback, RangeNotifier, Moni
                 startService(intent)
             }
             toggleAlarm = !toggleAlarm
+        }
+
+        close.setOnClickListener {
+            showList()
         }
 
         change_role.setOnClickListener {
@@ -263,7 +269,7 @@ class MainContent : AppCompatActivity(), OnMapReadyCallback, RangeNotifier, Moni
                 ingredients.add(Ingredient().apply {
                     this.wiFiFrame = wiFiFrame
                     gpsDistance = GPSUtils.calculateDistance(myself.wiFiFrame, wiFiFrame)
-                    marker = createMarker(wiFiFrame)
+                    marker = createMarker(this)
                 })
             }
 
@@ -282,17 +288,55 @@ class MainContent : AppCompatActivity(), OnMapReadyCallback, RangeNotifier, Moni
     }
 
     //TODO verificar cuando es el marcador propio y sobreviviente/rescatista
-    private fun createMarker(wifiFrame: WiFiFrame): Marker? {
-        return googleMap.addMarker(
-            MarkerOptions()
-                .position(LatLng(wifiFrame.latitude, wifiFrame.longitude))
-                .icon(BitmapDescriptorFactory.defaultMarker((1..360).random().toFloat()))
-                .visible(true)
-        )
+    private fun createMarker(ingredient: Ingredient): Marker? {
+        if(ingredient == myself){
+            return googleMap.addMarker(
+                MarkerOptions()
+                    .position(LatLng(ingredient.wiFiFrame.latitude, ingredient.wiFiFrame.longitude))
+                    .flat(true)
+                    .zIndex(10f)
+                    .visible(true)
+            )
+        } else {
+            if(ingredient.wiFiFrame.role == Role.SURVIVOR.ordinal){
+                val b = BitmapFactory.decodeResource(resources, R.drawable.sos_icon)
+                val smallMarker = Bitmap.createScaledBitmap(b, 75, 75, false)
+
+                return googleMap.addMarker(
+                    MarkerOptions()
+                        .position(LatLng(ingredient.wiFiFrame.latitude, ingredient.wiFiFrame.longitude))
+                        .icon(BitmapDescriptorFactory.fromBitmap(smallMarker))
+                        .flat(true)
+                        .visible(true)
+                )
+            } else {
+                val b = BitmapFactory.decodeResource(resources, R.drawable.red_cross)
+                val smallMarker = Bitmap.createScaledBitmap(b, 75, 75, false)
+
+                return googleMap.addMarker(
+                    MarkerOptions()
+                        .position(LatLng(ingredient.wiFiFrame.latitude, ingredient.wiFiFrame.longitude))
+                        .icon(BitmapDescriptorFactory.fromBitmap(smallMarker))
+                        .flat(true)
+                        .visible(true)
+                )
+            }
+        }
     }
 
     //TODO verificar parámetros
     private fun updateMarker(ingredient: Ingredient): Marker? {
+        if(ingredient != myself){
+            val b = if(ingredient.wiFiFrame.role == Role.SURVIVOR.ordinal){
+                BitmapFactory.decodeResource(resources, R.drawable.sos_icon)
+            } else {
+                BitmapFactory.decodeResource(resources, R.drawable.red_cross)
+            }
+
+            val smallMarker = Bitmap.createScaledBitmap(b, 75, 75, false)
+            ingredient.marker?.setIcon(BitmapDescriptorFactory.fromBitmap(smallMarker))
+        }
+
         ingredient.marker?.position =
             LatLng(ingredient.wiFiFrame.latitude, ingredient.wiFiFrame.longitude)
 
@@ -487,7 +531,7 @@ class MainContent : AppCompatActivity(), OnMapReadyCallback, RangeNotifier, Moni
         myself.wiFiFrame.longitude = location.longitude
 
         if (myself.marker == null) {
-            myself.marker = createMarker(myself.wiFiFrame)
+            myself.marker = createMarker(myself)
             updateCamera(myself)
         } else {
             myself.marker = updateMarker(myself)

@@ -1,72 +1,88 @@
 package com.example.botondepanicov1.activities
 
 import android.Manifest
+import android.bluetooth.BluetoothAdapter
+import android.bluetooth.BluetoothManager
+import android.content.Context
 import android.content.Intent
 import android.content.IntentSender
+import android.net.wifi.WifiManager
+import android.os.Build
 import android.os.Bundle
+import android.provider.Settings
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import com.example.botondepanicov1.R
 import com.example.botondepanicov1.util.Constants
+import com.example.botondepanicov1.util.Constants.Companion.REQUEST_CHECK_SETTINGS
+import com.example.botondepanicov1.util.Constants.Companion.REQUEST_ENABLE_BLUETOOTH
+import com.example.botondepanicov1.util.Constants.Companion.REQUEST_ENABLE_WIFI
 import com.example.botondepanicov1.util.PermissionsCheck
+import com.google.android.gms.common.api.ApiException
+import com.google.android.gms.common.api.CommonStatusCodes.RESOLUTION_REQUIRED
 import com.google.android.gms.common.api.ResolvableApiException
 import com.google.android.gms.location.*
+import com.google.android.gms.location.LocationSettingsStatusCodes.SETTINGS_CHANGE_UNAVAILABLE
 import com.google.android.gms.tasks.Task
 import kotlinx.android.synthetic.main.activity_pantalla_principal.*
 
-//TODO check location request, bluetooth request and wifi. Think about a new activity for asking all of this
 class PantallaPrincipal : AppCompatActivity() {
+    private val locationPermissionRequest = registerForActivityResult(
+        ActivityResultContracts.RequestMultiplePermissions()
+    ) { permissions ->
+        when {
+            (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) -> {
+                when {
+                    (permissions[Manifest.permission.BLUETOOTH_CONNECT] == false
+                            || permissions[Manifest.permission.ACCESS_FINE_LOCATION] == false
+                            || permissions[Manifest.permission.ACCESS_COARSE_LOCATION] == false) -> {
+                        requestPermissions()
+                    }
+                    else -> {
+                        createLocationRequest()
+                    }
+                }
+            }
+            else -> {
+                when {
+                    (permissions[Manifest.permission.ACCESS_FINE_LOCATION] == false
+                            || permissions[Manifest.permission.ACCESS_COARSE_LOCATION] == false) -> {
+                        requestPermissions()
+                    }
+                    else -> {
+                        createLocationRequest()
+                    }
+                }
+            }
+        }
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_pantalla_principal)
 
-        sos_button.setOnClickListener {
-            val intent = Intent(this, MainContent::class.java)
-            startActivity(intent)
-        }
-
-        if (!PermissionsCheck.isLocationPermissionGranted(this)) {
-            requestLocationPermission()
+        if (!PermissionsCheck.isLocationPermissionGranted(this) || !PermissionsCheck.isBtPermissionGranted(
+                this
+            )
+        ) {
+            requestPermissions()
         } else {
-            whenLocationPermissionGranted()
+            createLocationRequest()
         }
     }
 
-    private fun requestLocationPermission() {
-        val locationPermissionRequest = registerForActivityResult(
-            ActivityResultContracts.RequestMultiplePermissions()
-        ) { permissions ->
-            when {
-                (permissions[Manifest.permission.ACCESS_FINE_LOCATION] == true) -> {
-                    whenLocationPermissionGranted()
-                }
-                (permissions[Manifest.permission.ACCESS_COARSE_LOCATION] == true) -> {
-                    //Creo que solo sale en android 12
-                    Toast.makeText(this, "Coarse location", Toast.LENGTH_SHORT).show()
-                    whenLocationPermissionGranted()
-                }
-                else -> {
-                    Toast.makeText(
-                        this,
-                        "El permiso de ubicación es necesario para ver dispositivos cercanos",
-                        Toast.LENGTH_SHORT
-                    ).show()
-                    finish()
-                }
-            }
-
-        }
-
+    private fun requestPermissions() {
         locationPermissionRequest.launch(
             arrayOf(
                 Manifest.permission.ACCESS_FINE_LOCATION,
-                Manifest.permission.ACCESS_COARSE_LOCATION
+                Manifest.permission.ACCESS_COARSE_LOCATION,
+                Manifest.permission.BLUETOOTH_CONNECT
             )
         )
     }
 
-    private fun whenLocationPermissionGranted() {
+    private fun onSetupCompleted() {
         val sharedPreference = getSharedPreferences(Constants.PREFERENCES_KEY, MODE_PRIVATE)
         val name = sharedPreference.getString(Constants.PREFERENCES_USERNAME, null)
         val intent = Intent(this, Login::class.java)
@@ -75,6 +91,11 @@ class PantallaPrincipal : AppCompatActivity() {
             startActivity(intent)
             finish()
         } else {
+            sos_button.setOnClickListener {
+                val intent = Intent(this, MainContent::class.java)
+                startActivity(intent)
+            }
+
             saludo.text = "¡Hola $name!"
             edit_name.setOnClickListener {
                 startActivity(intent)
@@ -88,49 +109,116 @@ class PantallaPrincipal : AppCompatActivity() {
     }
 
     private fun createLocationRequest() {
-        val locationRequest = LocationRequest.create().apply {
-            priority = Priority.PRIORITY_LOW_POWER
-        }
+        val locationRequest = LocationRequest.Builder(Priority.PRIORITY_LOW_POWER, 5000)
 
         val builder = LocationSettingsRequest.Builder()
-            .addLocationRequest(locationRequest)
+            .addLocationRequest(locationRequest.build())
 
         val client: SettingsClient = LocationServices.getSettingsClient(this)
         val task: Task<LocationSettingsResponse> = client.checkLocationSettings(builder.build())
 
+        task.addOnSuccessListener {
+            enableBluetooth()
+        }
+
         task.addOnFailureListener { exception ->
-            if (exception is ResolvableApiException) {
-                try {
-                    // Show the dialog by calling startResolutionForResult(),
-                    // and check the result in onActivityResult().
-                    exception.startResolutionForResult(
+            val apiException = exception as ApiException
+
+            when (apiException.statusCode) {
+                RESOLUTION_REQUIRED -> {
+                    try {
+                        ResolvableApiException(exception.status)
+                            .startResolutionForResult(this, REQUEST_CHECK_SETTINGS)
+                    } catch (sendEx: IntentSender.SendIntentException) {
+                        // Ignore the error.
+                    }
+                }
+
+                SETTINGS_CHANGE_UNAVAILABLE -> {
+                    Toast.makeText(
                         this,
-                        Constants.REQUEST_CHECK_SETTINGS
-                    )
-                } catch (sendEx: IntentSender.SendIntentException) {
-                    // Ignore the error.
+                        "El dispositivo no es compatible. No se encuentra sensor GPS",
+                        Toast.LENGTH_SHORT
+                    ).show()
                 }
             }
         }
     }
 
-    /*//encender o apagar bluetooth
-    private fun encenderBluetooth() {
-        if (!btAdapter!!.isEnabled) {
-            btAdapter!!.enable()
+    private fun enableBluetooth() {
+        val btManager = this.getSystemService(BLUETOOTH_SERVICE) as BluetoothManager
+        val bluetoothAdapter = btManager.adapter
+
+        if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.S) {
+            bluetoothAdapter.enable()
+            enableWifi()
+        } else if (!bluetoothAdapter.isEnabled) {
+            //Bluetooth Request
+            Toast.makeText(this, "Por favor activa el Bluetooth", Toast.LENGTH_SHORT).show()
+            startActivityForResult(
+                Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE),
+                REQUEST_ENABLE_BLUETOOTH
+            )
+        } else {
+            enableWifi()
         }
-    }*/
+    }
+
+    private fun enableWifi() {
+        val wifiManager =
+            this.applicationContext.getSystemService(Context.WIFI_SERVICE) as WifiManager
+
+        if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.P) {
+            wifiManager.isWifiEnabled = true
+            onSetupCompleted()
+        } else if (!wifiManager.isWifiEnabled) {
+            //Wifi activation
+            Toast.makeText(this, "Por favor activa el Wi-Fi", Toast.LENGTH_SHORT).show()
+            val panelIntent = Intent(Settings.Panel.ACTION_WIFI)
+            startActivityForResult(panelIntent, REQUEST_ENABLE_WIFI)
+        } else {
+            onSetupCompleted()
+        }
+    }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
 
         when (requestCode) {
-            Constants.REQUEST_CHECK_SETTINGS -> {
+            REQUEST_CHECK_SETTINGS -> {
                 if (resultCode == RESULT_OK) {
-                    Toast.makeText(this, "Se ha activado la ubicación", Toast.LENGTH_SHORT).show()
+                    enableBluetooth()
                 } else {
-                    Toast.makeText(this, "No se ha activado la ubicación", Toast.LENGTH_SHORT)
+                    Toast.makeText(
+                        this,
+                        "Active la ubicación del dispositivo para continuar",
+                        Toast.LENGTH_SHORT
+                    )
                         .show()
+                    //createLocationRequest
+                }
+            }
+
+            REQUEST_ENABLE_BLUETOOTH -> {
+                if (resultCode == RESULT_OK) {
+                    enableWifi()
+                } else {
+                    Toast.makeText(this, "Active el Bluetooth para continuar", Toast.LENGTH_SHORT)
+                        .show()
+                    //enableBluetooth
+                }
+            }
+
+            REQUEST_ENABLE_WIFI -> {
+                val wifiManager =
+                    this.applicationContext.getSystemService(Context.WIFI_SERVICE) as WifiManager
+
+                if (wifiManager.isWifiEnabled) {
+                    onSetupCompleted()
+                } else {
+                    Toast.makeText(this, "Active el Wi-Fi para continuar", Toast.LENGTH_SHORT)
+                        .show()
+                    //enableWifi
                 }
             }
         }
