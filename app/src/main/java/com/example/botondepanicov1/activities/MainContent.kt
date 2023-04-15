@@ -24,6 +24,7 @@ import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import com.example.botondepanicov1.R
 import com.example.botondepanicov1.adapters.IngredientAdapter
+import com.example.botondepanicov1.databinding.ActivityMainContentBinding
 import com.example.botondepanicov1.models.Ingredient
 import com.example.botondepanicov1.models.Role
 import com.example.botondepanicov1.services.AlarmService
@@ -36,7 +37,6 @@ import com.example.botondepanicov1.util.GPSUtils
 import com.example.botondepanicov1.util.WiFiFrameUtils
 import com.google.android.gms.maps.*
 import com.google.android.gms.maps.model.*
-import kotlinx.android.synthetic.main.activity_main_content.*
 import org.altbeacon.beacon.*
 import java.util.*
 
@@ -64,9 +64,14 @@ class MainContent : AppCompatActivity(), OnMapReadyCallback, RangeNotifier, Moni
     private var beaconParser = BeaconParser()
         .setBeaconLayout("m:2-3=beac,i:4-19,i:20-21,i:22-23,p:24-24,d:25-25")
 
+    private lateinit var binding: ActivityMainContentBinding
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_main_content)
+
+        binding = ActivityMainContentBinding.inflate(layoutInflater)
+        val view = binding.root
+        setContentView(view)
 
         if (!packageManager.hasSystemFeature(PackageManager.FEATURE_BLUETOOTH_LE)) {
             Log.i(TAG_BT, "BLE is not supported")
@@ -158,11 +163,11 @@ class MainContent : AppCompatActivity(), OnMapReadyCallback, RangeNotifier, Moni
         collection = hashMapOf(Role.SURVIVOR to ingredients, Role.RESCUER to ingredients)
         expandableListAdapter =
             IngredientAdapter(this, collection, listOf(Role.SURVIVOR, Role.RESCUER))
-        expandable_list.setAdapter(expandableListAdapter)
+        binding.expandableList.setAdapter(expandableListAdapter)
 
         showList()
 
-        expandable_list.setOnChildClickListener { _, _, group, child, _ ->
+        binding.expandableList.setOnChildClickListener { _, _, group, child, _ ->
             selectedIngredient = expandableListAdapter.getChild(group, child)
             showDescription()
             updateDescription(selectedIngredient)
@@ -174,30 +179,30 @@ class MainContent : AppCompatActivity(), OnMapReadyCallback, RangeNotifier, Moni
         wifiP2pChannel = wifiP2pManager.initialize(applicationContext, mainLooper, null)
 
         //TODO Detener el servicio cuando termina la actividad
-        toggle_alarm.setOnClickListener {
+        binding.toggleAlarm.setOnClickListener {
             val intent = Intent(this, AlarmService::class.java)
 
             if (toggleAlarm) {
-                toggle_alarm.setImageResource(R.drawable.alarm_off)
+                binding.toggleAlarm.setImageResource(R.drawable.alarm_off)
                 stopService(intent)
             } else {
-                toggle_alarm.setImageResource(R.drawable.alarm)
+                binding.toggleAlarm.setImageResource(R.drawable.alarm)
                 startService(intent)
             }
             toggleAlarm = !toggleAlarm
         }
 
-        close.setOnClickListener {
+        binding.close.setOnClickListener {
             showList()
         }
 
-        change_role.setOnClickListener {
+        binding.changeRole.setOnClickListener {
             if (myself.wiFiFrame.role == Role.SURVIVOR.ordinal) {
                 myself.wiFiFrame.role = Role.RESCUER.ordinal
-                change_role.text = "Cambiar a sobreviviente"
+                binding.changeRole.text = "Cambiar a sobreviviente"
             } else {
                 myself.wiFiFrame.role = Role.SURVIVOR.ordinal
-                change_role.text = "Cambiar a rescatista"
+                binding.changeRole.text = "Cambiar a rescatista"
             }
         }
 
@@ -273,13 +278,13 @@ class MainContent : AppCompatActivity(), OnMapReadyCallback, RangeNotifier, Moni
                 })
             }
 
-            if (list.visibility == View.VISIBLE) {
+            if (binding.list.visibility == View.VISIBLE) {
                 val survivors =
                     ingredients.filter { x -> x.wiFiFrame.role == Role.SURVIVOR.ordinal }
                 val rescuers = ingredients.filter { x -> x.wiFiFrame.role == Role.RESCUER.ordinal }
                 collection = hashMapOf(Role.SURVIVOR to survivors, Role.RESCUER to rescuers)
                 expandableListAdapter.setData(collection)
-            } else if (description.visibility == View.VISIBLE) {
+            } else if (binding.description.visibility == View.VISIBLE) {
                 updateDescription(selectedIngredient)
             }
         }
@@ -403,44 +408,44 @@ class MainContent : AppCompatActivity(), OnMapReadyCallback, RangeNotifier, Moni
     }
 
     private fun showList() {
-        list.visibility = View.VISIBLE
-        description.visibility = View.GONE
+        binding.list.visibility = View.VISIBLE
+        binding.description.visibility = View.GONE
     }
 
     private fun showDescription() {
-        list.visibility = View.GONE
-        description.visibility = View.VISIBLE
+        binding.list.visibility = View.GONE
+        binding.description.visibility = View.VISIBLE
     }
 
     //TODO derivated values like gpsdistance and height could be removed from Ingredient
     private fun updateDescription(ingredient: Ingredient?) {
         if (ingredient != null) {
-            device.text = ingredient.wiFiFrame.deviceName
-            role.text =
+            binding.device.text = ingredient.wiFiFrame.deviceName
+            binding.role.text =
                 if (ingredient.wiFiFrame.role == Role.SURVIVOR.ordinal) "Sobreviviente" else "Rescatista"
 
             if (ingredient == myself) {
                 descriptionVisibility(View.GONE)
-                username.text = "${ingredient.wiFiFrame.username} (yo)"
+                binding.username.text = "${ingredient.wiFiFrame.username} (yo)"
             } else {
                 descriptionVisibility(View.VISIBLE)
-                username.text = ingredient.wiFiFrame.username
-                gps_distance.text = "GPS: ${ingredient.gpsDistance} metros"
-                gps_caption.text = "Actualización: ${ingredient.wiFiFrame.date}"
-                bt_distance.text = "Absoluta: ${ingredient.bluetoothFrame.distance} metros"
-                height.text = "Altura: ${ingredient.height} metros"
-                bt_caption.text = "Actualización: ${ingredient.btUpdateDate}"
+                binding.username.text = ingredient.wiFiFrame.username
+                binding.gpsDistance.text = "GPS: ${ingredient.gpsDistance} metros"
+                binding.gpsCaption.text = "Actualización: ${ingredient.wiFiFrame.date}"
+                binding.btDistance.text = "Absoluta: ${ingredient.bluetoothFrame.distance} metros"
+                binding.height.text = "Altura: ${ingredient.height} metros"
+                binding.btCaption.text = "Actualización: ${ingredient.btUpdateDate}"
             }
         }
     }
 
     private fun descriptionVisibility(visibility: Int) {
-        distances.visibility = visibility
-        gps_distance.visibility = visibility
-        gps_caption.visibility = visibility
-        bt_distance.visibility = visibility
-        height.visibility = visibility
-        bt_caption.visibility = visibility
+        binding.distances.visibility = visibility
+        binding.gpsDistance.visibility = visibility
+        binding.gpsCaption.visibility = visibility
+        binding.btDistance.visibility = visibility
+        binding.height.visibility = visibility
+        binding.btCaption.visibility = visibility
     }
 
 
@@ -507,7 +512,7 @@ class MainContent : AppCompatActivity(), OnMapReadyCallback, RangeNotifier, Moni
                     theIngredient.bluetoothFrame.identifier = oneBeacon.id1
                     theIngredient.btUpdateDate = Date()
 
-                    if (description.visibility == View.VISIBLE) {
+                    if (binding.description.visibility == View.VISIBLE) {
                         updateDescription(selectedIngredient)
                     }
                 }

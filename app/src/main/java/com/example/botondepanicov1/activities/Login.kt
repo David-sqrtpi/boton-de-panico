@@ -6,27 +6,31 @@ import android.os.Bundle
 import android.view.View
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
-import com.example.botondepanicov1.R
+import com.example.botondepanicov1.databinding.ActivityLoginBinding
 import com.example.botondepanicov1.util.Constants
-import kotlinx.android.synthetic.main.activity_login.*
 import java.util.*
 
 class Login : AppCompatActivity() {
     private lateinit var sharedPreferences: SharedPreferences
+    private lateinit var binding: ActivityLoginBinding
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_login)
 
-        continuar.setOnClickListener(onContinuarClickListener)
+        binding = ActivityLoginBinding.inflate(layoutInflater)
+        val view = binding.root
+        setContentView(view)
+
+        binding.continuar.setOnClickListener(onContinuarClickListener)
 
         sharedPreferences = getSharedPreferences(Constants.PREFERENCES_KEY, MODE_PRIVATE)
         val savedName = sharedPreferences.getString(Constants.PREFERENCES_USERNAME, "")
 
-        user.setText(savedName)
+        binding.user.setText(savedName)
     }
 
     private val onContinuarClickListener = View.OnClickListener {
-        val name = user.text.toString()
+        val name = binding.user.text.toString()
 
         if (name.isNotBlank()) {
             saveName(name)

@@ -14,6 +14,7 @@ import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import com.example.botondepanicov1.R
+import com.example.botondepanicov1.databinding.ActivityPantallaPrincipalBinding
 import com.example.botondepanicov1.util.Constants
 import com.example.botondepanicov1.util.Constants.Companion.REQUEST_CHECK_SETTINGS
 import com.example.botondepanicov1.util.Constants.Companion.REQUEST_ENABLE_BLUETOOTH
@@ -25,7 +26,6 @@ import com.google.android.gms.common.api.ResolvableApiException
 import com.google.android.gms.location.*
 import com.google.android.gms.location.LocationSettingsStatusCodes.SETTINGS_CHANGE_UNAVAILABLE
 import com.google.android.gms.tasks.Task
-import kotlinx.android.synthetic.main.activity_pantalla_principal.*
 
 class PantallaPrincipal : AppCompatActivity() {
     private val locationPermissionRequest = registerForActivityResult(
@@ -58,9 +58,14 @@ class PantallaPrincipal : AppCompatActivity() {
         }
     }
 
+    private lateinit var binding: ActivityPantallaPrincipalBinding
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_pantalla_principal)
+
+        binding = ActivityPantallaPrincipalBinding.inflate(layoutInflater)
+        val view = binding.root
+        setContentView(view)
 
         if (!PermissionsCheck.isLocationPermissionGranted(this) || !PermissionsCheck.isBtPermissionGranted(
                 this
@@ -91,17 +96,16 @@ class PantallaPrincipal : AppCompatActivity() {
             startActivity(intent)
             finish()
         } else {
-            sos_button.setOnClickListener {
-                val intent = Intent(this, MainContent::class.java)
-                startActivity(intent)
+            binding.sosButton.setOnClickListener {
+                startActivity(Intent(this, MainContent::class.java))
             }
 
-            saludo.text = "¡Hola $name!"
-            edit_name.setOnClickListener {
+            binding.saludo.text = "¡Hola $name!"
+            binding.editName.setOnClickListener {
                 startActivity(intent)
                 finish()
             }
-            saludo.setOnClickListener {
+            binding.saludo.setOnClickListener {
                 startActivity(intent)
                 finish()
             }
